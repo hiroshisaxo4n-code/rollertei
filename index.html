@@ -2,333 +2,390 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#22305A">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12202A">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ローラー亭</title>
+<title>TOUGE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>:root {
-  --kon: #22305A;
-  --kon-2: #34467E;
-  --kon-deep: #161F3D;
-  --shu: #D7262E;
-  --shu-dark: #A81B22;
-  --tile: #F3F4EF;
-  --grout: #DADBD2;
-  --yakime: #C98A2B;
-  --denpyo: #E4EDD9;
-  --denpyo-line: #B5C8A2;
-  --sumi: #1D1D1F;
-  --muted: #646a76;
-  --display: "Dela Gothic One", "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
-  --body: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+  --ink: #12202A;
+  --ink-2: #1A2D39;
+  --ink-3: #26414F;
+  --fog: #93A7B2;
+  --white: #F4F7F8;
+  --paper: #F1F3EF;
+  --sign: #FFC31F;
+  --sign-ink: #17150C;
+  --teal: #2FB3A6;
+  --hr: #FF5C61;
+  --num: "Saira Condensed", "Arial Narrow", system-ui, sans-serif;
+  --jp: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
   --sa-top: env(safe-area-inset-top, 0px);
   --sa-bot: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; background: var(--kon-deep); }
-body { font-family: var(--body); color: var(--sumi); font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+html, body { margin: 0; height: 100%; background: var(--ink); }
+body { font-family: var(--jp); color: var(--white); font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
 [hidden] { display: none !important; }
+.num { font-family: var(--num); font-style: italic; }
 
 #app { position: fixed; inset: 0; overflow: hidden; }
-.view { position: absolute; inset: 0; display: flex; flex-direction: column; }
-.tiled {
-  background-color: var(--tile);
-  background-image:
-    linear-gradient(var(--grout) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grout) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: -1px -1px;
-}
-.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(24px + var(--sa-bot)); }
-.pad { padding: 16px; }
+.view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--ink); }
+.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(28px + var(--sa-bot)); }
+.col { width: 100%; max-width: 560px; margin: 0 auto; padding: 0 16px; }
+.col.wide { max-width: 760px; }
+.pad-y { padding-top: 16px; }
 
-/* ---------- noren (home header) ---------- */
-.noren { padding-top: var(--sa-top); background: var(--kon); }
-.noren .panels { display: flex; gap: 5px; padding: 10px 10px 0; background: var(--kon); }
-.noren .panels span {
-  flex: 1; height: 88px; display: grid; place-items: center;
-  background: var(--kon); color: #fff; font-family: var(--display); font-size: 40px; line-height: 1;
-  border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(0,0,0,0.25);
-  transform-origin: top center; animation: sway 2.6s ease-in-out 1 both;
-}
-.noren .panels span:nth-child(2) { animation-delay: .08s; }
-.noren .panels span:nth-child(3) { animation-delay: .16s; }
-.noren .panels span:nth-child(4) { animation-delay: .24s; }
-.noren .panels span:nth-child(5) { animation-delay: .32s; }
-.noren { box-shadow: 0 6px 0 -1px var(--kon-deep); }
-@keyframes sway { 0% { transform: skewX(0); } 20% { transform: skewX(-5deg); } 45% { transform: skewX(3deg); } 70% { transform: skewX(-1.2deg); } 100% { transform: skewX(0); } }
-@media (prefers-reduced-motion: reduce) { .noren .panels span { animation: none; } }
-
-.window { position: relative; height: 170px; margin: 14px 16px 0; border: 6px solid #4A3424; border-radius: 4px; background: #000; overflow: hidden; }
-.window canvas { width: 100%; height: 100%; display: block; }
-.window-sky-note { position: absolute; left: 8px; bottom: 6px; font-size: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+/* ---------- home hero ---------- */
+.hero { position: relative; height: clamp(240px, 46vh, 460px); }
+.hero canvas { width: 100%; height: 100%; display: block; }
+.hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: linear-gradient(to bottom, rgba(18,32,42,0), var(--ink)); pointer-events: none; }
+.brand { position: absolute; left: max(16px, calc(50% - 280px)); bottom: 6px; z-index: 1; }
+.logo { margin: 0; font-family: var(--num); font-style: italic; font-weight: 800; font-size: clamp(64px, 12vw, 120px); line-height: .82; letter-spacing: -0.01em; color: var(--white); }
+.logo::after { content: ""; display: inline-block; width: .32em; height: .32em; margin-left: .08em; background: var(--sign); transform: rotate(45deg) translateY(-.08em); }
+.tag { margin: 6px 0 0; font-family: var(--num); font-weight: 700; font-size: 16px; letter-spacing: .32em; color: var(--sign); }
+.hero-note { position: absolute; right: 12px; top: calc(10px + var(--sa-top)); font-size: 12px; color: rgba(255,255,255,.85); text-shadow: 0 1px 2px rgba(0,0,0,.5); }
 
 /* ---------- devices ---------- */
-.devices { display: grid; gap: 0; background: #fff; border: 1px solid var(--grout); margin-bottom: 14px; }
-.dev { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 12px; padding: 12px 14px; }
-.dev + .dev { border-top: 1px solid var(--grout); }
-.dev-ico { width: 28px; height: 28px; color: var(--muted); }
-.dev.on .dev-ico { color: var(--shu); }
+.devices { margin: 18px 0 14px; border-top: 1px solid var(--ink-3); }
+.dev { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--ink-3); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink-3); box-shadow: 0 0 0 3px rgba(255,255,255,.04); }
+.dev.on .dot { background: var(--teal); box-shadow: 0 0 0 4px rgba(47,179,166,.2); }
+.dev.wait .dot { background: var(--sign); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
 .dev-name { font-weight: 700; }
-.dev-status { font-size: 13px; color: var(--muted); }
-.dev.on .dev-status { color: #2E7D3A; }
-.dev.wait .dev-status { color: #B26A00; }
+.dev-status { font-size: 13px; color: var(--fog); }
+.dev.on .dev-status { color: var(--teal); }
 
-.live-strip { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--kon); color: #fff; margin: -6px 0 14px; }
-.live-strip div { padding: 8px 12px; display: flex; align-items: baseline; gap: 4px; }
-.live-strip b { font-family: var(--display); font-weight: 400; font-size: 24px; font-variant-numeric: tabular-nums; }
-.live-strip small { opacity: .7; }
+.live-strip { display: grid; grid-template-columns: repeat(3, 1fr); margin: -4px 0 16px; }
+.live-strip div { display: flex; align-items: baseline; gap: 4px; }
+.live-strip b { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 34px; font-variant-numeric: tabular-nums; }
+.live-strip small { color: var(--fog); }
 
 /* ---------- buttons ---------- */
-.btn { border: 0; border-radius: 10px; padding: 14px 18px; font-weight: 700; font-size: 16px; min-height: 48px; }
+.btn { border: 0; border-radius: 6px; padding: 14px 18px; font-weight: 700; font-size: 16px; min-height: 50px; }
 .btn.block { display: block; width: 100%; margin-bottom: 10px; }
-.btn.primary { background: var(--shu); color: #fff; font-family: var(--display); font-weight: 400; font-size: 19px; letter-spacing: .04em; box-shadow: 0 4px 0 var(--shu-dark); }
-.btn.primary:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--shu-dark); }
-.btn.outline { background: #fff; color: var(--kon); border: 2px solid var(--kon); }
-.btn.ghost { background: transparent; color: var(--kon); }
-.btn.danger { color: var(--shu); }
-.btn.small { min-height: 38px; padding: 8px 14px; font-size: 14px; background: var(--kon); color: #fff; border-radius: 8px; }
-.btn.small.off { background: #fff; color: var(--kon); border: 1.5px solid var(--kon); }
+.btn.primary { background: var(--sign); color: var(--sign-ink); font-weight: 900; font-size: 17px; letter-spacing: .02em; clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.outline { background: transparent; color: var(--white); border: 1.5px solid var(--ink-3); }
+.btn.outline:hover { border-color: var(--fog); }
+.btn.ghost { background: transparent; color: var(--white); }
+.btn.danger { color: var(--hr); }
+.btn.small { min-height: 38px; padding: 8px 16px; font-size: 14px; background: var(--white); color: var(--ink); border-radius: 4px; }
+.btn.small.off { background: transparent; color: var(--white); border: 1.5px solid var(--ink-3); }
 .row-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .row-btns .btn { flex: 1 1 auto; }
 .file-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; }
-.file-btn input { position: absolute; inset: 0; opacity: 0; }
-.sublinks { display: flex; gap: 0; margin-top: 8px; border-top: 1px solid var(--grout); }
-.sublinks button { flex: 1; background: none; border: 0; padding: 14px 0; color: var(--kon); font-weight: 700; }
-.sublinks button + button { border-left: 1px solid var(--grout); }
-.note { font-size: 13px; color: var(--muted); margin: 10px 0; }
-.chip { border: 1.5px solid var(--kon); background: #fff; color: var(--kon); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 700; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.sublinks { display: flex; margin-top: 10px; }
+.sublinks button { flex: 1; background: none; border: 0; padding: 14px 0; color: var(--fog); font-weight: 700; }
+.sublinks button:hover { color: var(--white); }
+.note { font-size: 13px; color: var(--fog); margin: 10px 0; }
+.chip { border: 1.5px solid var(--ink-3); background: transparent; color: var(--white); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; }
 
 /* ---------- top bar ---------- */
-.bar { display: grid; grid-template-columns: 56px 1fr 72px; align-items: center; background: var(--kon); color: #fff; padding-top: var(--sa-top); min-height: calc(52px + var(--sa-top)); }
-.bar h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 18px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar .back { background: none; border: 0; color: #fff; font-size: 34px; line-height: 1; height: 52px; }
-.bar-act { background: none; border: 0; color: #fff; font-weight: 700; height: 52px; }
-.h2 { font-family: var(--display); font-weight: 400; font-size: 18px; margin: 26px 0 4px; color: var(--kon); }
+.bar { display: grid; grid-template-columns: 56px 1fr 72px; align-items: center; background: var(--ink); border-bottom: 1px solid var(--ink-3); padding-top: var(--sa-top); min-height: calc(54px + var(--sa-top)); }
+.bar h1 { margin: 0; font-weight: 900; font-size: 17px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .back { background: none; border: 0; color: var(--white); font-size: 34px; line-height: 1; height: 54px; }
+.bar-act { background: none; border: 0; color: var(--sign); font-weight: 900; height: 54px; }
+.h2 { font-weight: 900; font-size: 16px; margin: 28px 0 4px; }
 
-/* ---------- menu list (workouts / history) ---------- */
-.menu { list-style: none; margin: 0; padding: 0; background: #fff; }
-.menu li { border-bottom: 1px solid var(--grout); }
-.menu button.item { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px 12px; }
-.item-name { font-family: var(--display); font-size: 18px; line-height: 1.35; color: var(--sumi); }
-.item-meta { font-size: 13px; color: var(--muted); margin-top: 2px; display: flex; gap: 14px; flex-wrap: wrap; }
-.item-meta .food-meta { color: var(--yakime); font-weight: 700; }
-.mini { display: flex; align-items: flex-end; height: 26px; gap: 1px; margin-top: 8px; }
+/* ---------- lists ---------- */
+.menu { list-style: none; margin: 0; padding: 0; }
+.menu li { border-bottom: 1px solid var(--ink-3); }
+.menu button.item { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 16px 2px 14px; }
+.menu button.item:hover .item-name { color: var(--sign); }
+.item-name { font-weight: 900; font-size: 18px; line-height: 1.35; }
+.item-meta { font-size: 13px; color: var(--fog); margin-top: 2px; display: flex; gap: 14px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.item-meta .food-meta { color: var(--sign); }
+.mini { display: flex; align-items: flex-end; height: 26px; gap: 1px; margin-top: 10px; }
 .mini i { display: block; }
-.menu .section-head { padding: 14px 16px 6px; font-size: 13px; color: var(--muted); font-weight: 700; background: var(--tile); }
-.empty { padding: 28px 16px; color: var(--muted); text-align: center; background: var(--tile); }
+.menu .section-head { padding: 22px 2px 6px; font-size: 13px; color: var(--fog); font-weight: 700; border-bottom: 1px solid var(--ink-3); }
+.empty { padding: 28px 2px; color: var(--fog); }
 
 /* ---------- workout detail / editor ---------- */
-.desc { margin: 0 0 12px; }
-canvas.profile { width: 100%; height: 150px; display: block; background: #fff; border: 1px solid var(--grout); }
-.facts { display: grid; grid-template-columns: repeat(3, 1fr); margin: 12px 0; background: #fff; border: 1px solid var(--grout); }
-.facts div { padding: 10px 12px; }
-.facts div + div { border-left: 1px solid var(--grout); }
-.facts dt { font-size: 12px; color: var(--muted); }
-.facts dd { margin: 0; font-family: var(--display); font-size: 20px; font-variant-numeric: tabular-nums; }
-.steps { margin: 0 0 16px; padding: 0; list-style: none; background: #fff; border: 1px solid var(--grout); }
-.steps li { display: grid; grid-template-columns: 6px 1fr auto; gap: 10px; align-items: center; padding: 8px 12px 8px 0; font-size: 14px; }
-.steps li + li { border-top: 1px solid var(--grout); }
-.steps li i { align-self: stretch; }
-.steps li span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+.desc { margin: 0 0 14px; color: #D3DDE2; }
+canvas.profile { width: 100%; height: 160px; display: block; background: var(--ink-2); border-radius: 4px; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); margin: 14px 0; }
+.facts div { padding: 4px 0; }
+.facts dt { font-size: 12px; color: var(--fog); }
+.facts dd { margin: 0; font-family: var(--num); font-style: italic; font-weight: 800; font-size: 28px; line-height: 1.1; }
+.steps { margin: 0 0 18px; padding: 0; list-style: none; border-top: 1px solid var(--ink-3); }
+.steps li { display: grid; grid-template-columns: 4px 1fr auto; gap: 12px; align-items: center; padding: 9px 2px 9px 0; font-size: 14px; border-bottom: 1px solid var(--ink-3); }
+.steps li i { align-self: stretch; border-radius: 2px; }
+.steps li span:last-child { color: var(--fog); font-variant-numeric: tabular-nums; }
 
-.field { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--grout); padding: 8px 12px; margin-bottom: -1px; }
+.field { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px solid var(--ink-3); }
 .field > span { font-weight: 700; font-size: 15px; }
-.field input, .field textarea { border: 0; background: var(--tile); border-radius: 6px; padding: 8px 10px; font-size: 16px; width: 120px; text-align: right; }
+.field input, .field textarea { border: 1px solid var(--ink-3); background: var(--ink-2); border-radius: 4px; padding: 8px 10px; font-size: 16px; width: 120px; text-align: right; }
 .field input[type=text], .field textarea { width: 100%; text-align: left; grid-column: 1 / -1; }
-.field i { font-style: normal; color: var(--muted); font-size: 14px; width: 30px; }
-.switch { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--grout); padding: 12px; margin-bottom: -1px; font-weight: 700; font-size: 15px; }
-.switch input { width: 24px; height: 24px; accent-color: var(--shu); }
-.form { margin-bottom: 8px; }
-.ed-sum { font-size: 14px; color: var(--muted); margin: 8px 0; }
+.field i { font-style: normal; color: var(--fog); font-size: 14px; width: 30px; }
+.switch { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px 2px; border-bottom: 1px solid var(--ink-3); font-weight: 700; font-size: 15px; }
+.switch input { width: 22px; height: 22px; accent-color: var(--sign); }
+.ed-sum { font-size: 14px; color: var(--fog); margin: 8px 0; }
 .blocks { list-style: none; margin: 0 0 10px; padding: 0; }
-.blk { background: #fff; border: 1px solid var(--grout); border-left: 6px solid var(--kon); padding: 10px 10px 10px 12px; margin-bottom: 8px; }
+.blk { background: var(--ink-2); border-left: 4px solid var(--fog); padding: 10px 10px 12px 12px; margin-bottom: 8px; border-radius: 0 4px 4px 0; }
 .blk-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .blk-head b { flex: 1; font-size: 15px; }
-.blk-head button { width: 34px; height: 34px; border: 1px solid var(--grout); background: var(--tile); border-radius: 6px; font-size: 15px; }
+.blk-head button { width: 34px; height: 34px; border: 1px solid var(--ink-3); background: transparent; border-radius: 4px; font-size: 15px; }
 .blk-row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 14px; }
 .blk-row label { display: inline-flex; align-items: center; gap: 4px; }
-.blk-row input { width: 58px; border: 1px solid var(--grout); border-radius: 6px; padding: 6px; text-align: right; font-size: 16px; background: var(--tile); }
+.blk-row input { width: 60px; border: 1px solid var(--ink-3); border-radius: 4px; padding: 6px; text-align: right; font-size: 16px; background: var(--ink); }
 .add-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
 
-/* ---------- ride ---------- */
-.ride { background: var(--kon-deep); color: #fff; display: grid; grid-template-rows: 44% 1fr; }
+/* ---------- ride: phone portrait ---------- */
+.ride { display: grid; grid-template-rows: 46% 1fr; }
 .stage { position: relative; overflow: hidden; }
-.stage canvas { width: 100%; height: 100%; display: block; }
-.stage-top { position: absolute; top: calc(8px + var(--sa-top)); left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-.clock { font-family: var(--display); font-size: 26px; text-shadow: 0 2px 0 rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
-.world-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(22,31,61,.72); padding: 4px 10px 4px 8px; border-radius: 999px; font-size: 13px; font-weight: 700; }
-.world-chip i { width: 10px; height: 10px; border-radius: 50%; background: #8E9AAF; }
-.start-hint, .pause-badge { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: rgba(22,31,61,.85); padding: 10px 18px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
-.pause-badge { background: rgba(215,38,46,.92); }
+.stage canvas#ride-scene { width: 100%; height: 100%; display: block; }
+.course-card { position: absolute; left: 10px; top: calc(10px + var(--sa-top)); width: min(46vw, 300px); background: rgba(18,32,42,.78); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 6px; padding: 7px 10px 6px; }
+.cc-top, .cc-bot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cc-stage { font-weight: 900; font-size: 13px; }
+.cc-top b { font-family: var(--num); font-style: italic; font-weight: 700; font-size: 14px; color: var(--sign); white-space: nowrap; }
+.cc-bot { font-size: 11px; color: var(--fog); font-variant-numeric: tabular-nums; }
+#r-course { width: 100%; height: 34px; display: block; margin: 3px 0 2px; }
+.clock-box { position: absolute; right: 10px; top: calc(8px + var(--sa-top)); text-align: right; }
+.clock { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 34px; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,.35); font-variant-numeric: tabular-nums; }
+.fs-btn { display: none; margin-top: 6px; background: rgba(18,32,42,.7); border: 1px solid rgba(255,255,255,.25); border-radius: 4px; color: var(--white); font-size: 12px; padding: 4px 10px; }
+.start-hint, .pause-badge { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); background: rgba(18,32,42,.86); padding: 10px 20px; border-radius: 6px; font-weight: 900; white-space: nowrap; border-left: 4px solid var(--sign); }
+.pause-badge { border-left-color: var(--hr); }
 
-.hud { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: min-content; gap: 1px; background: var(--kon-2); overflow-y: auto; padding-bottom: var(--sa-bot); align-content: start; }
-.hud > * { background: var(--kon); }
-.m { padding: 6px 10px 8px; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 4px; min-width: 0; }
-.m label { width: 100%; font-size: 11px; opacity: .7; }
-.m b { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.m small { font-size: 11px; opacity: .7; }
-.m.power { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr; align-items: end; border-left: 8px solid #8E9AAF; padding-left: 12px; }
+.hud { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: min-content; align-content: start; gap: 0; background: var(--ink); overflow-y: auto; padding-bottom: var(--sa-bot); }
+.m { padding: 6px 10px 8px; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 3px; min-width: 0; border-bottom: 1px solid var(--ink-3); }
+.m + .m:not(.power) { border-left: 1px solid var(--ink-3); }
+.m.power + .m { border-left: 0; }
+.m label { width: 100%; font-size: 11px; color: var(--fog); font-weight: 700; }
+.m b { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.m small { font-size: 11px; color: var(--fog); }
+.m-hr b { color: var(--hr); }
+.m.power { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr; align-items: end; padding: 8px 14px 10px; position: relative; }
+.m.power::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 5px; background: var(--zc, var(--fog)); }
 .m.power label { grid-column: 1 / -1; }
-.m.power b { font-size: 64px; line-height: .95; }
-.m.power small { font-size: 16px; margin-left: 4px; }
-.m.power em { font-style: normal; justify-self: end; text-align: right; font-size: 14px; line-height: 1.3; opacity: .9; }
-.m.power em b { font-size: 26px; display: block; }
-.stepinfo { grid-column: 1 / -1; padding: 6px 12px; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
-.stepinfo b { font-family: var(--display); font-weight: 400; font-size: 20px; font-variant-numeric: tabular-nums; }
-canvas.strip { grid-column: 1 / -1; width: 100%; height: 56px; display: block; }
-.food { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 8px 12px; background: var(--kon-deep) !important; }
-.food-now { display: flex; align-items: baseline; gap: 6px; }
-.food-e { font-size: 26px; }
-.food-now b { font-family: var(--display); font-weight: 400; font-size: 24px; color: #F6C66B; }
-.food-now span:last-child { font-size: 13px; opacity: .75; margin-left: 4px; }
-.food-next { font-size: 12px; opacity: .85; }
-.food-bar { height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; margin-bottom: 3px; }
-.food-bar i { display: block; height: 100%; width: 0; background: var(--yakime); transition: width .8s; }
+.m.power b { font-size: 76px; line-height: .9; }
+.m.power small { font-size: 18px; margin-left: 4px; }
+.m.power em { font-style: normal; justify-self: end; text-align: right; font-size: 12px; line-height: 1.3; color: var(--fog); font-weight: 700; }
+.m.power em b { font-size: 34px; display: block; color: var(--sign); }
+.stepinfo { grid-column: 1 / -1; padding: 8px 12px; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; color: #D3DDE2; }
+.stepinfo b { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 22px; color: var(--white); font-variant-numeric: tabular-nums; }
+canvas.strip { grid-column: 1 / -1; width: 100%; height: 54px; display: block; }
+.food { grid-column: 1 / -1; padding: 9px 12px 10px; border-top: 1px solid var(--ink-3); border-bottom: 1px solid var(--ink-3); }
+.food-now { display: flex; align-items: center; gap: 10px; }
+.food-e { font-size: 30px; line-height: 1; font-family: system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.food-now b { display: block; font-size: 16px; font-weight: 900; }
+.food-now span { font-size: 12px; color: var(--fog); font-variant-numeric: tabular-nums; }
+.food-bar { height: 4px; background: var(--ink-3); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.food-bar i { display: block; height: 100%; width: 0; background: var(--sign); transition: width .9s; }
 .controls { grid-column: 1 / -1; display: grid; gap: 8px; padding: 10px 12px; }
 .crow { display: flex; gap: 8px; }
 .crow > * { flex: 1 1 0; min-width: 0; }
-.controls button { min-height: 48px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.35); background: var(--kon-2); color: #fff; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 4px; }
-.controls button.on { background: #F2B705; color: var(--kon-deep); border-color: #F2B705; }
-.controls button.end { background: var(--shu); border-color: var(--shu); }
-.controls .val { display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--display); font-size: 20px; line-height: 1.1; background: transparent; }
-.controls .val small { font-family: var(--body); font-size: 11px; opacity: .7; font-weight: 700; }
-.simbar { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 8px 12px; font-size: 13px; background: #2a1d3d !important; }
-.simbar button { border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; border-radius: 6px; padding: 6px 10px; }
+.controls button { min-height: 48px; border-radius: 6px; border: 1.5px solid var(--ink-3); background: var(--ink-2); color: var(--white); font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 4px; }
+.controls button:hover { border-color: var(--fog); }
+.controls button.on { background: var(--sign); color: var(--sign-ink); border-color: var(--sign); }
+.controls button.end { background: var(--hr); border-color: var(--hr); color: #fff; }
+.controls .val { display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--num); font-style: italic; font-weight: 800; font-size: 22px; line-height: 1.05; }
+.controls .val small { font-family: var(--jp); font-style: normal; font-size: 11px; color: var(--fog); font-weight: 700; }
+.keys { display: none; font-size: 11px; color: var(--fog); text-align: right; }
+.simbar { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 8px 12px; font-size: 13px; background: #2A2340; }
+.simbar button { border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; border-radius: 4px; padding: 6px 10px; }
 
+/* ---------- ride: phone landscape ---------- */
 @media (orientation: landscape) and (max-height: 520px) {
   .ride { grid-template-rows: 1fr; grid-template-columns: 1fr minmax(340px, 42%); }
-  .stage-top { top: 8px; }
+  .course-card { top: 8px; }
+  .clock-box { top: 6px; }
   .m { padding: 3px 8px 5px; }
   .m label { font-size: 10px; }
-  .m b { font-size: 20px; }
-  .m.power b { font-size: 44px; }
-  .m.power em b { font-size: 20px; }
-  .stepinfo { padding: 3px 10px; font-size: 12px; }
-  .stepinfo b { font-size: 16px; }
+  .m b { font-size: 22px; }
+  .m.power b { font-size: 48px; }
+  .m.power em b { font-size: 22px; }
+  .stepinfo { padding: 4px 10px; font-size: 12px; }
+  .stepinfo b { font-size: 17px; }
   canvas.strip { height: 34px; }
-  .food { padding: 4px 10px; }
-  .food-e { font-size: 18px; }
-  .food-now b { font-size: 18px; }
+  .food { padding: 5px 10px 6px; }
+  .food-e { font-size: 22px; }
+  .food-now b { font-size: 14px; }
   .controls { padding: 6px 8px; gap: 6px; }
   .crow { gap: 6px; }
   .controls button { min-height: 38px; font-size: 13px; }
-  .controls .val { font-size: 16px; }
+  .controls .val { font-size: 17px; }
 }
 
-/* ---------- receipt ---------- */
-.receipt { background: var(--denpyo); border: 1px solid var(--denpyo-line); padding: 18px 16px 20px; position: relative; box-shadow: 0 2px 0 rgba(0,0,0,.06); }
-.receipt::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 6px; background: var(--shu); }
-.rc-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--shu); padding-bottom: 6px; margin-bottom: 10px; }
-.rc-head h2 { margin: 0; font-family: var(--display); font-weight: 400; color: var(--shu); font-size: 26px; letter-spacing: .2em; }
-.rc-head span { font-size: 13px; color: #4b5a40; }
-.rc-name { font-weight: 900; font-size: 17px; margin-bottom: 8px; }
-.rc-rows { display: grid; grid-template-columns: 1fr auto; margin: 0; }
-.rc-rows dt, .rc-rows dd { margin: 0; padding: 5px 0; border-bottom: 1px dashed var(--denpyo-line); font-size: 15px; }
-.rc-rows dd { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-.rc-food { margin: 14px 0 6px; padding: 12px; background: #fff; border: 1px solid var(--denpyo-line); }
-.rc-food h3 { margin: 0 0 6px; font-size: 14px; color: #4b5a40; }
-.rc-food .total { font-family: var(--display); font-size: 30px; color: var(--sumi); }
-.rc-food .total small { font-family: var(--body); font-size: 14px; font-weight: 700; margin-left: 4px; }
-.rc-food ul { list-style: none; margin: 8px 0 0; padding: 0; }
-.rc-food li { display: flex; justify-content: space-between; padding: 3px 0; font-size: 16px; }
-.rc-food .emojis { font-size: 22px; letter-spacing: 2px; margin-top: 6px; word-break: break-all; }
-.rc-chart { width: 100%; height: 160px; display: block; background: #fff; border: 1px solid var(--denpyo-line); margin-top: 12px; }
-.rc-ftp { margin-top: 12px; padding: 12px; background: #FFF7DE; border: 1px solid #E5C96B; }
-.rc-ftp b { font-family: var(--display); font-size: 26px; }
+/* ---------- ride: monitor (PC) — broadcast-style overlay ---------- */
+@media (min-width: 1000px) and (min-height: 560px) {
+  .ride { display: block; }
+  .stage { position: absolute; inset: 0; }
+  .course-card { left: 28px; top: 24px; width: 360px; padding: 12px 16px 10px; }
+  .cc-stage { font-size: 18px; }
+  .cc-top b { font-size: 22px; }
+  .cc-bot { font-size: 13px; }
+  #r-course { height: 52px; }
+  .clock-box { right: 28px; top: 20px; }
+  .clock { font-size: 64px; }
+  .fs-btn { display: inline-block; }
+  .start-hint, .pause-badge { font-size: 22px; padding: 14px 28px; }
+  .hud {
+    position: absolute; left: 28px; right: 28px; bottom: 24px; overflow: visible;
+    background: rgba(18,32,42,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 10px;
+    grid-template-columns: minmax(300px, 1.5fr) repeat(4, minmax(100px, .7fr)) minmax(300px, 1.4fr);
+    grid-template-areas: "power hr cad spd dist food" "step step step step step ctrl" "strip strip strip strip strip ctrl";
+  }
+  .m { border-bottom: 0; padding: 12px 16px; align-content: center; }
+  .m.power { grid-area: power; border-right: 1px solid var(--ink-3); }
+  .m-hr { grid-area: hr; } .m-cad { grid-area: cad; } .m-spd { grid-area: spd; } .m-dist { grid-area: dist; }
+  .m + .m:not(.power) { border-left: 1px solid var(--ink-3); }
+  .m.power + .m { border-left: 0; }
+  .m label { font-size: 13px; }
+  .m b { font-size: 46px; }
+  .m small { font-size: 14px; }
+  .m.power b { font-size: 108px; }
+  .m.power small { font-size: 24px; }
+  .m.power em { font-size: 14px; }
+  .m.power em b { font-size: 46px; }
+  .food { grid-area: food; border: 0; border-left: 1px solid var(--ink-3); padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; }
+  .food-e { font-size: 44px; }
+  .food-now b { font-size: 20px; }
+  .food-now span { font-size: 14px; }
+  .stepinfo { grid-area: step; border-top: 1px solid var(--ink-3); font-size: 16px; padding: 8px 16px 2px; }
+  .stepinfo b { font-size: 30px; }
+  canvas.strip { grid-area: strip; height: 64px; padding: 0 16px 12px; }
+  .controls { grid-area: ctrl; border-top: 1px solid var(--ink-3); border-left: 1px solid var(--ink-3); padding: 10px 14px; align-content: center; }
+  .controls button { min-height: 44px; }
+  .keys { display: block; }
+  .simbar { position: absolute; left: 0; bottom: calc(100% + 8px); border-radius: 6px; }
+}
+
+/* ---------- finisher card ---------- */
+.finisher { background: var(--paper); color: #16212A; border-radius: 4px; padding: 22px 20px 20px; position: relative; overflow: hidden; }
+.finisher::before { content: ""; position: absolute; right: -60px; top: -60px; width: 180px; height: 180px; background: var(--sign); transform: rotate(45deg); }
+.fn-top { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.fn-top > div:first-child { min-width: 0; }
+.fn-kicker { font-family: var(--num); font-weight: 700; letter-spacing: .22em; font-size: 12px; color: #5B6B75; }
+.fn-title { margin: 2px 0 0; font-family: var(--num); font-style: italic; font-weight: 800; font-size: clamp(38px, 11vw, 54px); line-height: .9; }
+.fn-bib { position: relative; z-index: 1; flex-shrink: 0; background: #fff; border: 2px solid #16212A; padding: 4px 10px 2px; text-align: center; transform: rotate(4deg); margin-top: 6px; }
+.fn-bib small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.fn-bib b { font-family: var(--num); font-weight: 800; font-size: clamp(26px, 7vw, 36px); line-height: 1; }
+.fn-name { position: relative; margin: 14px 0 2px; font-weight: 900; font-size: 18px; }
+.fn-date { font-size: 13px; color: #5B6B75; }
+.fn-time { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 4px; }
+.fn-time b { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 64px; line-height: .9; font-variant-numeric: tabular-nums; }
+.fn-time span { font-size: 13px; color: #5B6B75; font-weight: 700; }
+.fn-reach { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+.fn-reach em { font-style: normal; background: #16212A; color: var(--sign); padding: 1px 8px; border-radius: 2px; margin-right: 6px; }
+.fn-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid #16212A; }
+.fn-grid div { padding: 8px 0 8px; border-bottom: 1px solid #CDD3D0; }
+.fn-grid dt { font-size: 11px; color: #5B6B75; font-weight: 700; }
+.fn-grid dd { margin: 0; font-family: var(--num); font-style: italic; font-weight: 800; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fn-grid dd small { font-size: 13px; font-weight: 700; margin-left: 2px; }
+.fn-food { margin-top: 16px; padding: 14px; background: #16212A; color: var(--white); border-radius: 4px; }
+.fn-food h3 { margin: 0; font-size: 13px; color: var(--fog); font-weight: 700; }
+.fn-food .kc { font-family: var(--num); font-style: italic; font-weight: 800; font-size: 40px; line-height: 1.05; color: var(--sign); }
+.fn-food .kc small { font-family: var(--jp); font-style: normal; font-size: 14px; color: var(--white); margin-left: 4px; }
+.fn-food ul { list-style: none; margin: 8px 0 0; padding: 0; }
+.fn-food li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; padding: 5px 0; border-top: 1px solid var(--ink-3); font-weight: 700; }
+.fn-food li span:first-child { font-size: 24px; font-family: system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.fn-food li span:last-child { color: var(--fog); font-size: 13px; font-variant-numeric: tabular-nums; }
+.fn-chart { width: 100%; height: 150px; display: block; margin-top: 14px; background: #fff; border: 1px solid #CDD3D0; border-radius: 2px; }
+.fn-ftp { margin-top: 14px; padding: 12px; background: #FFF3C4; border-left: 4px solid var(--sign); }
+.fn-ftp b { font-family: var(--num); font-style: italic; font-size: 30px; }
+.fn-ftp .btn.outline { color: #16212A; border-color: #16212A; }
 .sum-actions { margin-top: 16px; }
 
 /* ---------- toast / modal ---------- */
-.toast { position: fixed; left: 50%; top: calc(12px + var(--sa-top)); transform: translate(-50%, -140%); background: var(--sumi); color: #fff; padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; z-index: 50; transition: transform .25s; max-width: 92vw; text-align: center; }
+.toast { position: fixed; left: 50%; top: calc(12px + var(--sa-top)); transform: translate(-50%, -160%); background: var(--white); color: var(--ink); padding: 10px 18px; border-radius: 4px; font-weight: 900; font-size: 14px; z-index: 50; transition: transform .25s; max-width: 92vw; text-align: center; border-left: 4px solid var(--sign); }
 .toast.show { transform: translate(-50%, 0); }
-.modal { position: fixed; inset: 0; background: rgba(10,14,30,.55); display: grid; place-items: center; z-index: 60; padding: 20px; }
-.modal-box { background: #fff; color: var(--sumi); width: 100%; max-width: 420px; border-radius: 12px; padding: 20px 18px 14px; border-top: 6px solid var(--shu); max-height: 86vh; overflow-y: auto; }
-.modal-box h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 400; font-size: 20px; }
+.modal { position: fixed; inset: 0; background: rgba(6,12,18,.6); display: grid; place-items: center; z-index: 60; padding: 20px; }
+.modal-box { background: var(--ink-2); color: var(--white); width: 100%; max-width: 440px; border-radius: 8px; padding: 20px 18px 14px; border-top: 4px solid var(--sign); max-height: 86vh; overflow-y: auto; }
+.modal-box h3 { margin: 0 0 8px; font-weight: 900; font-size: 18px; }
 .modal-box ol { padding-left: 1.3em; margin: 8px 0; }
 .modal-box li { margin-bottom: 6px; }
-.modal-box a { color: var(--shu); font-weight: 700; }
+.modal-box a { color: var(--sign); font-weight: 700; }
 .modal-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .modal-btns .btn { width: 100%; }
-pre#log-pre { background: var(--kon-deep); color: #D8E1FF; padding: 12px; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 200px; }
+pre#log-pre { background: #0B151C; color: #CFE3EC; padding: 12px; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 200px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .dev.wait .dot { animation: none; } .toast { transition: none; } }
 </style>
 </head>
 <body>
 <div id="app">
 
   <!-- ホーム -->
-  <section class="view tiled" id="v-home">
-    <header class="noren" aria-label="ローラー亭">
-      <div class="panels" aria-hidden="true"><span>ロ</span><span>ー</span><span>ラ</span><span>ー</span><span>亭</span></div>
-    </header>
-    <div class="window"><canvas id="home-scene"></canvas><div class="window-sky-note" id="home-note"></div></div>
-    <div class="pad">
-      <div class="devices">
-        <div class="dev" id="dev-trainer">
-          <svg class="dev-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="16" cy="16" r="3" fill="currentColor"/><path d="M16 5v6M16 21v6M5 16h6M21 16h6" stroke="currentColor" stroke-width="2"/></svg>
-          <div class="dev-body"><div class="dev-name">スマートトレーナー</div><div class="dev-status" data-status>未接続</div></div>
-          <button class="btn small" data-act="connect-trainer">接続</button>
+  <section class="view" id="v-home">
+    <div class="scroll">
+      <header class="hero">
+        <canvas id="home-scene"></canvas>
+        <div class="brand">
+          <h1 class="logo">TOUGE</h1>
+          <p class="tag">INDOOR HILLCLIMB</p>
         </div>
-        <div class="dev" id="dev-hr">
-          <svg class="dev-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27S4 19.5 4 11.5A6 6 0 0 1 16 8a6 6 0 0 1 12 3.5C28 19.5 16 27 16 27z" fill="currentColor"/></svg>
-          <div class="dev-body"><div class="dev-name">心拍計</div><div class="dev-status" data-status>未接続</div></div>
-          <button class="btn small" data-act="connect-hr">接続</button>
+        <div class="hero-note" id="home-note"></div>
+      </header>
+      <div class="col">
+        <div class="devices">
+          <div class="dev" id="dev-trainer">
+            <span class="dot" aria-hidden="true"></span>
+            <div class="dev-body"><div class="dev-name">スマートトレーナー</div><div class="dev-status" data-status>未接続</div></div>
+            <button class="btn small" data-act="connect-trainer">接続</button>
+          </div>
+          <div class="dev" id="dev-hr">
+            <span class="dot" aria-hidden="true"></span>
+            <div class="dev-body"><div class="dev-name">心拍計</div><div class="dev-status" data-status>未接続</div></div>
+            <button class="btn small" data-act="connect-hr">接続</button>
+          </div>
         </div>
+        <div class="live-strip" id="home-live" hidden>
+          <div><b data-live="power">0</b><small>W</small></div>
+          <div><b data-live="cadence">0</b><small>rpm</small></div>
+          <div><b data-live="hr">--</b><small>bpm</small></div>
+        </div>
+        <button class="btn primary block" data-go="workouts">ワークアウトを選ぶ</button>
+        <button class="btn outline block" data-act="free-ride">ヒルクライム（フリーライド）</button>
+        <nav class="sublinks">
+          <button data-go="history">記録</button>
+          <button data-go="settings">設定</button>
+          <button data-go="log">接続ログ</button>
+        </nav>
+        <p class="note" id="bt-note"></p>
       </div>
-      <div class="live-strip" id="home-live" hidden>
-        <div><b data-live="power">0</b><small>W</small></div>
-        <div><b data-live="cadence">0</b><small>rpm</small></div>
-        <div><b data-live="hr">--</b><small>bpm</small></div>
-      </div>
-      <button class="btn primary block" data-go="workouts">ワークアウトを選ぶ</button>
-      <button class="btn outline block" data-act="free-ride">フリーライド</button>
-      <nav class="sublinks">
-        <button data-go="history">記録</button>
-        <button data-go="settings">設定</button>
-        <button data-go="log">接続ログ</button>
-      </nav>
-      <p class="note" id="bt-note"></p>
     </div>
   </section>
 
   <!-- ワークアウト一覧 -->
-  <section class="view tiled" id="v-workouts" hidden>
+  <section class="view" id="v-workouts" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>ワークアウト</h1><span></span></header>
-    <div class="scroll">
+    <div class="scroll"><div class="col wide">
       <ul class="menu" id="wk-list"></ul>
-      <div class="pad row-btns">
+      <div class="row-btns pad-y">
         <button class="btn outline" data-act="new-workout">新しく作る</button>
         <label class="btn outline file-btn">ZWOを読み込む<input type="file" accept=".zwo,.xml,text/xml,application/xml" id="zwo-input"></label>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <!-- ワークアウト詳細 -->
-  <section class="view tiled" id="v-wdetail" hidden>
+  <section class="view" id="v-wdetail" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1 id="wd-title"></h1><span></span></header>
-    <div class="scroll pad">
+    <div class="scroll"><div class="col wide pad-y">
       <p class="desc" id="wd-desc"></p>
       <canvas class="profile" id="wd-profile"></canvas>
       <dl class="facts" id="wd-facts"></dl>
       <ol class="steps" id="wd-steps"></ol>
-      <button class="btn primary block" data-act="ride-workout">このワークアウトで乗る</button>
+      <button class="btn primary block" data-act="ride-workout">このワークアウトで走る</button>
       <div class="row-btns">
         <button class="btn outline" data-act="edit-workout" id="wd-edit">編集</button>
         <button class="btn outline" data-act="copy-workout">複製して編集</button>
         <button class="btn ghost danger" data-act="delete-workout" id="wd-del">削除</button>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <!-- エディタ -->
-  <section class="view tiled" id="v-editor" hidden>
+  <section class="view" id="v-editor" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>ワークアウトを編集</h1><button class="bar-act" data-act="save-workout">保存</button></header>
-    <div class="scroll pad">
+    <div class="scroll"><div class="col wide pad-y">
       <label class="field"><span>名前</span><input type="text" id="ed-name" maxlength="40"></label>
       <canvas class="profile" id="ed-profile"></canvas>
       <p class="ed-sum" id="ed-sum"></p>
@@ -340,77 +397,82 @@ pre#log-pre { background: var(--kon-deep); color: #D8E1FF; padding: 12px; font-s
         <button class="chip" data-add="free">＋自由走</button>
       </div>
       <label class="field"><span>メモ</span><textarea id="ed-desc" rows="2" maxlength="300"></textarea></label>
-    </div>
+    </div></div>
   </section>
 
   <!-- 走行 -->
   <section class="view ride" id="v-ride" hidden>
     <div class="stage">
       <canvas id="ride-scene"></canvas>
-      <div class="stage-top">
-        <div class="clock" id="r-clock">0:00</div>
-        <div class="world-chip" id="r-world"><i></i><span>公園</span></div>
+      <div class="course-card">
+        <div class="cc-top"><span class="cc-stage" id="r-stage">麓の町</span><b id="r-remain"></b></div>
+        <canvas id="r-course"></canvas>
+        <div class="cc-bot"><span id="r-elev">標高 +0 m</span><span id="r-grade">勾配 0.0%</span></div>
       </div>
+      <div class="clock-box"><div class="clock" id="r-clock">0:00</div><button class="fs-btn" data-ract="fullscreen" title="全画面（F）">全画面</button></div>
       <div class="start-hint" id="r-start">ペダルを回すとスタート</div>
       <div class="pause-badge" id="r-paused" hidden>一時停止中</div>
     </div>
     <div class="hud">
       <div class="m power" id="m-power"><label>パワー</label><b data-r="power">0</b><small>W</small><em id="r-target"></em></div>
-      <div class="m"><label>心拍</label><b data-r="hr">--</b><small>bpm</small></div>
-      <div class="m"><label>ケイデンス</label><b data-r="cadence">0</b><small>rpm</small></div>
-      <div class="m"><label>速度</label><b data-r="speed">0.0</b><small>km/h</small></div>
-      <div class="m"><label>距離</label><b data-r="dist">0.00</b><small>km</small></div>
+      <div class="m m-hr"><label>心拍</label><b data-r="hr">--</b><small>bpm</small></div>
+      <div class="m m-cad"><label>ケイデンス</label><b data-r="cadence">0</b><small>rpm</small></div>
+      <div class="m m-spd"><label>速度</label><b data-r="speed">0.0</b><small>km/h</small></div>
+      <div class="m m-dist"><label>距離</label><b data-r="dist">0.00</b><small>km</small></div>
       <div class="stepinfo" id="r-step"></div>
       <canvas class="strip" id="r-strip"></canvas>
       <div class="food" id="r-food">
-        <div class="food-now"><span class="food-e">🥟</span><b id="r-gyoza">×0</b><span id="r-kcal">0 kcal</span></div>
-        <div class="food-next"><div class="food-bar"><i id="r-foodbar"></i></div><span id="r-foodnext"></span></div>
+        <div class="food-now"><span class="food-e" id="r-food-e">🔥</span><div><b id="r-food-t">まだこれから</b><span id="r-kcal">0 kcal</span></div></div>
+        <div class="food-bar"><i id="r-foodbar"></i></div>
       </div>
       <div class="controls" id="r-controls"></div>
       <div class="simbar" id="r-sim" hidden></div>
     </div>
   </section>
 
-  <!-- お会計（サマリー） -->
-  <section class="view tiled" id="v-summary" hidden>
-    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>お会計</h1><span></span></header>
-    <div class="scroll pad" id="sum-body"></div>
+  <!-- 完走証 -->
+  <section class="view" id="v-summary" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>リザルト</h1><span></span></header>
+    <div class="scroll"><div class="col pad-y" id="sum-body"></div></div>
   </section>
 
   <!-- 記録 -->
-  <section class="view tiled" id="v-history" hidden>
+  <section class="view" id="v-history" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>記録</h1><span></span></header>
-    <div class="scroll"><ul class="menu" id="hist-list"></ul></div>
+    <div class="scroll"><div class="col wide"><ul class="menu" id="hist-list"></ul></div></div>
   </section>
 
   <!-- 設定 -->
-  <section class="view tiled" id="v-settings" hidden>
+  <section class="view" id="v-settings" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>設定</h1><span></span></header>
-    <div class="scroll pad">
+    <div class="scroll"><div class="col pad-y">
       <div class="form">
         <label class="field"><span>FTP</span><input type="number" inputmode="numeric" id="s-ftp" min="50" max="600"><i>W</i></label>
         <label class="field"><span>体重</span><input type="number" inputmode="decimal" id="s-weight" min="20" max="200" step="0.1"><i>kg</i></label>
         <label class="field"><span>自転車の重さ</span><input type="number" inputmode="decimal" id="s-bike" min="3" max="30" step="0.1"><i>kg</i></label>
         <label class="field"><span>最大心拍</span><input type="number" inputmode="numeric" id="s-maxhr" min="100" max="230"><i>bpm</i></label>
+        <label class="field"><span>ゼッケン番号</span><input type="number" inputmode="numeric" id="s-bib" min="1" max="9999"><i></i></label>
         <label class="switch"><span>止まったら自動で一時停止</span><input type="checkbox" id="s-autopause"></label>
         <label class="switch"><span>ステップの切り替わりで音を鳴らす</span><input type="checkbox" id="s-sound"></label>
         <label class="switch"><span>走行中は画面を消さない</span><input type="checkbox" id="s-wake"></label>
         <label class="switch"><span>シミュレーターで試す（機材なし）</span><input type="checkbox" id="s-sim"></label>
       </div>
-      <p class="note">消費カロリーは仕事量（kJ）からの推定です。食べ物の換算は目安として、餃子1個40kcal、ラーメン1杯500kcalで計算しています。</p>
+      <p class="note">消費カロリーは仕事量（kJ）から出した目安です。食べ物の換算は一般的なカロリーの目安で計算しています。</p>
+      <h2 class="h2">パソコンで使うとき</h2>
+      <p class="note">WindowsではChromeかEdgeでこのページを開けば、Bluetoothでトレーナーと心拍計につながります。キー操作：スペース＝一時停止、←→＝強度・勾配の調整、S＝ステップをスキップ、E＝ERGのオン/オフ、M＝フリーライドのモード切替、F＝全画面。</p>
       <h2 class="h2">記録のバックアップ</h2>
-      <p class="note">記録はこのブラウザの中だけに保存されます。Bluefyを削除すると消えるので、ときどき書き出しておくと安心です。</p>
+      <p class="note">記録はこのブラウザの中だけに保存されます。iPhoneとパソコンで記録を移したいときや、念のための保存に使ってください。</p>
       <div class="row-btns">
         <button class="btn outline" data-act="backup">すべて書き出す</button>
         <label class="btn outline file-btn">読み込む<input type="file" accept=".json,application/json" id="restore-input"></label>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <!-- ログ -->
-  <section class="view tiled" id="v-log" hidden>
+  <section class="view" id="v-log" hidden>
     <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>接続ログ</h1><button class="bar-act" data-act="copy-log">コピー</button></header>
-    <div class="scroll pad"><p class="note">うまくつながらないときは、このログをコピーして送ってください。</p><pre id="log-pre"></pre></div>
+    <div class="scroll"><div class="col pad-y"><p class="note">うまくつながらないときは、このログをコピーして送ってください。</p><pre id="log-pre"></pre></div></div>
   </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1013,7 +1075,7 @@ const Workouts = (() => {
   for (let p = 50; p <= 160; p += 6) rampTestSteps.push(s(60, p));
 
   const builtins = [
-    { id: 'b-first', name: 'はじめの一杯', desc: 'まずは軽く20分。接続とERGの動きを確かめるのにちょうどいい。', blocks: [r(300, 45, 65), s(600, 65), r(300, 60, 40)] },
+    { id: 'b-first', name: 'ウォームアップ20分', desc: 'まずは軽く20分。接続とERGの動きを確かめるのにちょうどいい。', blocks: [r(300, 45, 65), s(600, 65), r(300, 60, 40)] },
     { id: 'b-recovery', name: '回復ライド', desc: '脚を回すだけの30分。疲れている日に。', blocks: [r(300, 40, 55), s(1200, 55), r(300, 55, 40)] },
     { id: 'b-ss', name: 'スイートスポット 2×10分', desc: 'FTPの90%で10分を2本。効率よく地脚をつくる定番。', blocks: [r(600, 45, 75), iv(2, 600, 90, 300, 55), r(300, 55, 40)] },
     { id: 'b-pyramid', name: 'ピラミッド', desc: '2分ごとに強度が上がって、また下がる。', blocks: [r(480, 45, 70), s(120, 80), s(120, 90), s(120, 100), s(120, 110), s(120, 100), s(120, 90), s(120, 80), r(480, 60, 40)] },
@@ -1091,27 +1153,63 @@ const Workouts = (() => {
     return { id: `c-${Date.now()}`, name: name.trim(), desc: desc.trim().slice(0, 300), blocks };
   }
 
-  /* ---------- food equivalents (目安) ---------- */
-  const GYOZA = 40;
-  const MILESTONES = [
-    { k: 40, e: '🥟', t: '餃子1個ぶん' },
-    { k: 120, e: '🥟', t: '餃子3個ぶん' },
-    { k: 180, e: '🍙', t: 'おにぎり1個ぶん' },
-    { k: 240, e: '🥟', t: '餃子1人前ぶん' },
-    { k: 330, e: '🍰', t: 'ショートケーキぶん' },
-    { k: 500, e: '🍜', t: 'ラーメン1杯ぶん' },
-    { k: 740, e: '🍜', t: 'ラーメン＋餃子ぶん' },
-    { k: 1000, e: '🍜', t: 'ラーメン2杯ぶん' },
-    { k: 1440, e: '🍚', t: 'ラーメン餃子チャーハンぶん' },
-    { k: 2000, e: '🏮', t: '店ごといけるぶん' },
+  /* ---------- food equivalents (目安kcal) ---------- */
+  const FOODS = [
+    { e: '🍬', n: '飴', u: '粒', k: 15 },
+    { e: '🍫', n: 'チョコ', u: 'かけ', k: 30 },
+    { e: '🍪', n: 'クッキー', u: '枚', k: 50 },
+    { e: '🍌', n: 'バナナ', u: '本', k: 90 },
+    { e: '🍡', n: 'みたらし団子', u: '本', k: 120 },
+    { e: '🍮', n: 'プリン', u: '個', k: 150 },
+    { e: '🍙', n: 'おにぎり', u: '個', k: 180 },
+    { e: '🍺', n: '生ビール', u: '杯', k: 200 },
+    { e: '🍦', n: 'ソフトクリーム', u: '個', k: 210 },
+    { e: '🍩', n: 'ドーナツ', u: '個', k: 250 },
+    { e: '🍔', n: 'ハンバーガー', u: '個', k: 260 },
+    { e: '🍢', n: '焼きまんじゅう', u: '本', k: 280 },
+    { e: '🍰', n: 'ショートケーキ', u: '個', k: 330 },
+    { e: '🍟', n: 'フライドポテトM', u: '個', k: 410 },
+    { e: '🍜', n: 'ラーメン', u: '杯', k: 500 },
+    { e: '🍣', n: 'にぎり寿司', u: '人前', k: 550 },
+    { e: '🍝', n: 'ナポリタン', u: '皿', k: 650 },
+    { e: '🍱', n: '幕の内弁当', u: '個', k: 700 },
+    { e: '🍛', n: 'カレーライス', u: '皿', k: 750 },
+    { e: '🍚', n: 'カツ丼', u: '杯', k: 900 },
   ];
-  function nextMilestone(kcal) { return MILESTONES.find((m) => m.k > kcal) || null; }
-  /* split kcal into ramen bowls + gyoza pieces for the receipt */
-  function receipt(kcal) {
-    const ramen = Math.floor(kcal / 500);
-    const rest = kcal - ramen * 500;
-    const gyoza = Math.floor(rest / GYOZA);
-    return { ramen, gyoza, rest: rest - gyoza * GYOZA };
+  /* foods shown as you ride: one step up the ladder at a time */
+  const LADDER = ['飴', 'クッキー', 'バナナ', 'みたらし団子', 'おにぎり', 'ドーナツ', '焼きまんじゅう', 'ショートケーキ', 'フライドポテトM', 'ラーメン', 'ナポリタン', 'カレーライス', 'カツ丼']
+    .map((n) => FOODS.find((f) => f.n === n));
+  const BIG = ['ラーメン', 'ハンバーガー', '焼きまんじゅう', 'ドーナツ', 'おにぎり', 'バナナ'].map((n) => FOODS.find((f) => f.n === n));
+  function level(kcal) {
+    if (kcal < 1000) {
+      let lv = -1;
+      LADDER.forEach((f, i) => { if (kcal >= f.k) lv = i; });
+      return lv < 0 ? null : { id: `l${lv}`, f: LADDER[lv], n: 1 };
+    }
+    const step = Math.floor(kcal / 500);           // a new big food every 500 kcal
+    const f = BIG[step % BIG.length];
+    return { id: `b${step}`, f, n: Math.max(1, Math.floor(kcal / f.k)) };
+  }
+  function nextLevelK(kcal) {
+    if (kcal < 1000) { const f = LADDER.find((x) => x.k > kcal); return f ? f.k : 1000; }
+    return (Math.floor(kcal / 500) + 1) * 500;
+  }
+  const label = (f, n) => `${f.n}${n}${f.u}`;
+  /* a varied combination for the finisher card (stable per seed) */
+  function combo(kcal, seed = 1) {
+    let x = (Math.imul(seed | 0, 2654435761) ^ 0x9E3779B9) >>> 0 || 1;
+    const rnd = () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return (x % 10000) / 10000; };
+    for (let i = 0; i < 5; i++) rnd();
+    const out = [];
+    let rest = Math.round(kcal);
+    while (rest >= 15 && out.length < 4) {
+      const c = FOODS.filter((f) => f.k <= rest && !out.some((o) => o.f === f)).sort((a, b) => b.k - a.k);
+      if (!c.length) break;
+      const f = c[Math.floor(rnd() * Math.min(out.length ? 4 : 3, c.length))];
+      const n = Math.max(1, Math.min(Math.floor(rest / f.k), out.length === 0 ? 3 : 2));
+      out.push({ f, n }); rest -= f.k * n;
+    }
+    return out;
   }
 
   /* ---------- custom workouts storage ---------- */
@@ -1125,8 +1223,39 @@ const Workouts = (() => {
 
   return {
     builtins, flatten, duration, at, estimateTSS, zoneOf, ZONE_COLORS, parseZWO,
-    GYOZA, MILESTONES, nextMilestone, receipt, all, get, upsert, remove, loadCustom,
+    FOODS, level, nextLevelK, label, combo, all, get, upsert, remove, loadCustom,
   };
+})();
+
+/* ============================================================
+   Virtual hill-climb course (15 km, ~950 m up, six sections)
+   ============================================================ */
+const Course = (() => {
+  const L = 15000;
+  const STAGES = [
+    { p: 0.00, key: 'town', name: '麓の町', g: 3.5 },
+    { p: 0.12, key: 'cedar', name: '杉並木', g: 6.5 },
+    { p: 0.36, key: 'hairpin', name: 'つづら折り', g: 7.5 },
+    { p: 0.56, key: 'steep', name: '激坂', g: 10.0 },
+    { p: 0.78, key: 'plateau', name: '高原', g: 5.0 },
+    { p: 0.93, key: 'lake', name: '湖畔', g: 1.5 },
+  ];
+  const c01 = (p) => Math.max(0, Math.min(0.99999, p));
+  function stageAt(p) { p = c01(p); let i = 0; STAGES.forEach((s, k) => { if (p >= s.p) i = k; }); return i; }
+  function gradeAt(p) {
+    p = c01(p);
+    const i = stageAt(p);
+    let g = STAGES[i].g;
+    const nx = STAGES[i + 1];
+    if (nx && nx.p - p < 0.02) { const k = 1 - (nx.p - p) / 0.02; g += (nx.g - g) * k * k * (3 - 2 * k) * 0.5; }
+    if (i > 0 && p - STAGES[i].p < 0.02) { const k = 1 - (p - STAGES[i].p) / 0.02; g += (STAGES[i - 1].g - g) * k * k * (3 - 2 * k) * 0.5; }
+    g += Math.sin(p * 97) * 0.9 + Math.sin(p * 31 + 1) * 0.6;
+    return Math.max(0.5, Math.round(g * 10) / 10);
+  }
+  const N = 600, elev = [0];
+  for (let k = 1; k <= N; k++) elev[k] = elev[k - 1] + (gradeAt((k - 0.5) / N) / 100) * (L / N);
+  const elevAt = (p) => { const x = c01(p) * N, i = Math.floor(x); return elev[i] + (elev[Math.min(N, i + 1)] - elev[i]) * (x - i); };
+  return { L, STAGES, stageAt, gradeAt, elevAt, total: elev[N], elev };
 })();
 
 /* tiny storage wrapper: survives sandboxes where localStorage throws */
@@ -1139,644 +1268,552 @@ const Store = (() => {
   };
 })();
 
-if (typeof module !== 'undefined') module.exports = { Workouts, Store };
+if (typeof module !== 'undefined') module.exports = { Workouts, Store, Course };
 
 ;
 /* ============================================================
-   Scene: side-scrolling world that changes with power zone and
-   elapsed time, ridden by ギョー太 (an original gyoza mascot)
+   TOUGE scene: a side-on hill climb. Time carries you up the
+   course (town → cedars → hairpins → steep wall → plateau → lake);
+   effort brings out dancing, wind and the roadside crowd.
    ============================================================ */
 const Scene = (() => {
   const TAU = Math.PI * 2;
   const rnd = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
   const lerp = (a, b, k) => a + (b - a) * k;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const hex2 = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  const mix = (a, b, k) => { const A = hex2(a), B = hex2(b); return `rgb(${Math.round(lerp(A[0], B[0], k))},${Math.round(lerp(A[1], B[1], k))},${Math.round(lerp(A[2], B[2], k))})`; };
-  const mixHex = (a, b, k) => { const A = hex2(a), B = hex2(b); return '#' + [0, 1, 2].map((i) => Math.round(lerp(A[i], B[i], k)).toString(16).padStart(2, '0')).join(''); };
+  const H2 = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const mix = (a, b, k) => { const A = H2(a), B = H2(b); return '#' + [0, 1, 2].map((i) => Math.round(lerp(A[i], B[i], clamp(k, 0, 1))).toString(16).padStart(2, '0')).join(''); };
+  const rgba = (h, a) => { const A = H2(h); return `rgba(${A[0]},${A[1]},${A[2]},${a})`; };
 
-  /* sky over one "day" — the day advances with elapsed ride time */
+  /* ---------- sky over a day (advances with ride time) ---------- */
   const SKY = [
-    { t: 0.00, top: '#2B3366', bot: '#F4A27C' }, // 夜明け
-    { t: 0.10, top: '#5AA6E6', bot: '#D4EEF8' }, // 朝
-    { t: 0.45, top: '#3B8BE0', bot: '#BFE2F5' }, // 昼
-    { t: 0.62, top: '#5C4D8E', bot: '#FF9C5B' }, // 夕焼け
-    { t: 0.72, top: '#1E2250', bot: '#6E4C7E' }, // 夕暮れ
-    { t: 0.80, top: '#0A1030', bot: '#1F2B58' }, // 夜
-    { t: 0.94, top: '#0A1030', bot: '#1F2B58' },
-    { t: 1.00, top: '#2B3366', bot: '#F4A27C' },
+    { t: 0.00, top: '#27325E', bot: '#E7A585' },
+    { t: 0.08, top: '#4C86C6', bot: '#F3D9BE' },
+    { t: 0.20, top: '#3F86D0', bot: '#CFE6F1' },
+    { t: 0.48, top: '#3A82CF', bot: '#C6E1F0' },
+    { t: 0.62, top: '#4D5A93', bot: '#F2A16C' },
+    { t: 0.70, top: '#2A2D5C', bot: '#B5677A' },
+    { t: 0.78, top: '#0D1433', bot: '#26335F' },
+    { t: 0.94, top: '#0D1433', bot: '#26335F' },
+    { t: 1.00, top: '#27325E', bot: '#E7A585' },
   ];
-  function skyAt(d) {
+  function light(d) {
     d = ((d % 1) + 1) % 1;
+    let top = SKY[0].top, bot = SKY[0].bot;
     for (let i = 0; i < SKY.length - 1; i++) {
       const a = SKY[i], b = SKY[i + 1];
-      if (d >= a.t && d <= b.t) { const k = (d - a.t) / (b.t - a.t); return { top: mixHex(a.top, b.top, k), bot: mixHex(a.bot, b.bot, k) }; }
+      if (d >= a.t && d <= b.t) { const k = (d - a.t) / (b.t - a.t); top = mix(a.top, b.top, k); bot = mix(a.bot, b.bot, k); break; }
     }
-    return SKY[0];
+    const night = d < 0.05 ? lerp(0.5, 0, d / 0.05) : d < 0.62 ? 0 : d < 0.78 ? (d - 0.62) / 0.16 : d < 0.94 ? 1 : lerp(1, 0.5, (d - 0.94) / 0.06);
+    const warm = d < 0.1 ? 1 - d / 0.1 : d > 0.55 && d < 0.72 ? Math.sin(((d - 0.55) / 0.17) * Math.PI) : 0;
+    return { d, top, bot, night, warm };
   }
-  function nightness(d) {
-    d = ((d % 1) + 1) % 1;
-    if (d < 0.06) return lerp(0.55, 0.1, d / 0.06);
-    if (d < 0.6) return 0;
-    if (d < 0.8) return (d - 0.6) / 0.2;
-    if (d < 0.94) return 1;
-    return lerp(1, 0.55, (d - 0.94) / 0.06);
+  const tintFn = (L) => (c) => mix(mix(c, '#FF9A5C', L.warm * 0.16), '#0C1430', L.night * 0.62);
+
+  /* ---------- seasons follow the real calendar ---------- */
+  function season() {
+    const m = new Date().getMonth() + 1;
+    if (m >= 3 && m <= 5) return { key: 'spring', leaf: ['#7DB862', '#F2B8C6', '#5E9E4E'], grass: '#8DBB5E', snow: false };
+    if (m >= 6 && m <= 8) return { key: 'summer', leaf: ['#3F8E46', '#2F7A3A', '#56A24E'], grass: '#6FA84E', snow: false };
+    if (m >= 9 && m <= 11) return { key: 'autumn', leaf: ['#D9622B', '#E8A23A', '#B8322E', '#7E8F3A'], grass: '#C8AE6A', snow: false };
+    return { key: 'winter', leaf: ['#8B7B6B', '#A39484', '#6E6258'], grass: '#B7AE93', snow: true };
   }
 
-  const THEMES = {
-    1: { key: 'park', name: '公園' },
-    2: { key: 'inaka', name: '田んぼ道' },
-    3: { key: 'sea', name: '海沿い' },
-    4: { key: 'touge', name: '峠' },
-    5: { key: 'storm', name: '嵐の山' },
-    6: { key: 'space', name: '宇宙' },
-  };
+  const STAGE_KEYS = ['town', 'cedar', 'hairpin', 'steep', 'plateau', 'lake'];
 
   function tiles(off, tw, W, fn) {
     const a = Math.floor(off / tw) - 1, b = Math.floor((off + W) / tw) + 1;
     for (let i = a; i <= b; i++) fn(i, i * tw - off);
   }
-  function hills(ctx, off, W, H, base, amp, wl, color, ph = 0) {
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.moveTo(0, H);
-    for (let x = 0; x <= W + 8; x += 8) {
-      const X = x + off;
-      const y = base - amp * (0.55 + 0.45 * Math.sin(X / wl + ph)) - amp * 0.35 * Math.sin(X / (wl * 0.41) + 1.7 + ph);
-      ctx.lineTo(x, y);
+  function ridge(ctx, off, W, H, base, amp, wl, color, seed, sharp = 0) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 6; x += 6) {
+      const X = (x + off) / wl;
+      let y = 0.5 + 0.28 * Math.sin(X + seed) + 0.14 * Math.sin(X * 2.13 + seed * 2) + 0.07 * Math.sin(X * 4.7 + seed * 3);
+      if (sharp) y += sharp * (0.5 - Math.abs(((X * 0.9 + seed) % 2 + 2) % 2 - 1)) * 0.5;
+      ctx.lineTo(x, base - amp * y);
     }
     ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
   }
-  function peaks(ctx, off, W, H, base, hMin, hMax, tw, color, snow, seed) {
-    tiles(off, tw, W, (i, x) => {
-      for (let k = 0; k < 2; k++) {
-        const cx = x + tw * (0.25 + 0.5 * k) + (rnd(i, seed + k) - 0.5) * tw * 0.3;
-        const h = lerp(hMin, hMax, rnd(i, seed + 7 + k));
-        const half = h * lerp(0.9, 1.4, rnd(i, seed + 3 + k));
-        ctx.fillStyle = color;
-        ctx.beginPath(); ctx.moveTo(cx - half, base); ctx.lineTo(cx - half * 0.12, base - h * 0.96); ctx.lineTo(cx, base - h); ctx.lineTo(cx + half, base); ctx.closePath(); ctx.fill();
-        if (snow) {
-          ctx.fillStyle = snow;
-          ctx.beginPath(); ctx.moveTo(cx - half * 0.12, base - h * 0.96); ctx.lineTo(cx, base - h);
-          ctx.lineTo(cx + half * 0.26, base - h * 0.74); ctx.lineTo(cx + half * 0.08, base - h * 0.79);
-          ctx.lineTo(cx - half * 0.06, base - h * 0.7); ctx.lineTo(cx - half * 0.22, base - h * 0.77); ctx.closePath(); ctx.fill();
-        }
-      }
-    });
-  }
-  function roundTree(ctx, x, y, s, c1, c2) {
-    ctx.fillStyle = '#6B4A2E'; ctx.fillRect(x - s * 0.08, y - s * 0.55, s * 0.16, s * 0.55);
-    ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(x, y - s * 0.85, s * 0.45, 0, TAU); ctx.fill();
-    ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(x - s * 0.18, y - s * 0.95, s * 0.28, 0, TAU); ctx.fill();
-  }
-  function pine(ctx, x, y, s, c) {
-    ctx.fillStyle = '#4A3523'; ctx.fillRect(x - s * 0.05, y - s * 0.25, s * 0.1, s * 0.25);
-    ctx.fillStyle = c;
-    for (let k = 0; k < 3; k++) {
-      const yy = y - s * (0.2 + k * 0.28), ww = s * (0.42 - k * 0.1);
-      ctx.beginPath(); ctx.moveTo(x - ww, yy); ctx.lineTo(x, yy - s * 0.42); ctx.lineTo(x + ww, yy); ctx.closePath(); ctx.fill();
+  function cone(ctx, cx, base, h, w, color, snow) {
+    ctx.fillStyle = color; ctx.beginPath();
+    ctx.moveTo(cx - w, base);
+    ctx.quadraticCurveTo(cx - w * 0.35, base - h * 0.55, cx - w * 0.1, base - h);
+    ctx.lineTo(cx + w * 0.1, base - h);
+    ctx.quadraticCurveTo(cx + w * 0.35, base - h * 0.55, cx + w, base);
+    ctx.closePath(); ctx.fill();
+    if (snow) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath();
+      ctx.moveTo(cx - w * 0.1, base - h); ctx.lineTo(cx + w * 0.1, base - h);
+      ctx.lineTo(cx + w * 0.26, base - h * 0.72); ctx.lineTo(cx + w * 0.08, base - h * 0.78); ctx.lineTo(cx - w * 0.06, base - h * 0.7); ctx.lineTo(cx - w * 0.24, base - h * 0.76);
+      ctx.closePath(); ctx.fill();
     }
   }
-  function house(ctx, x, y, s, wall, roof, lit) {
-    ctx.fillStyle = wall; ctx.fillRect(x - s * 0.5, y - s * 0.55, s, s * 0.55);
-    ctx.fillStyle = roof; ctx.beginPath(); ctx.moveTo(x - s * 0.66, y - s * 0.52); ctx.lineTo(x - s * 0.4, y - s * 0.86); ctx.lineTo(x + s * 0.4, y - s * 0.86); ctx.lineTo(x + s * 0.66, y - s * 0.52); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = lit ? '#FFD36B' : '#3A4660'; ctx.fillRect(x - s * 0.3, y - s * 0.4, s * 0.2, s * 0.16); ctx.fillRect(x + s * 0.1, y - s * 0.4, s * 0.2, s * 0.16);
-  }
-  function cloud(ctx, x, y, s, c) {
+  function cedar(ctx, x, y, h, c) {
     ctx.fillStyle = c; ctx.beginPath();
-    ctx.arc(x, y, s * 0.5, 0, TAU); ctx.arc(x + s * 0.5, y + s * 0.08, s * 0.38, 0, TAU);
-    ctx.arc(x - s * 0.5, y + s * 0.1, s * 0.34, 0, TAU); ctx.arc(x + s * 0.15, y - s * 0.25, s * 0.36, 0, TAU);
+    ctx.moveTo(x, y - h); ctx.lineTo(x + h * 0.16, y - h * 0.45); ctx.lineTo(x + h * 0.11, y - h * 0.45);
+    ctx.lineTo(x + h * 0.2, y - h * 0.08); ctx.lineTo(x - h * 0.2, y - h * 0.08); ctx.lineTo(x - h * 0.11, y - h * 0.45);
+    ctx.lineTo(x - h * 0.16, y - h * 0.45); ctx.closePath(); ctx.fill();
+    ctx.fillRect(x - h * 0.02, y - h * 0.1, h * 0.04, h * 0.1);
+  }
+  function roundTree(ctx, x, y, h, c, trunk) {
+    ctx.fillStyle = trunk; ctx.fillRect(x - h * 0.04, y - h * 0.45, h * 0.08, h * 0.45);
+    ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y - h * 0.68, h * 0.3, h * 0.34, 0, 0, TAU); ctx.fill();
+  }
+  function cloud(ctx, x, y, w, c) {
+    ctx.fillStyle = c; ctx.beginPath();
+    ctx.ellipse(x, y, w * 0.5, w * 0.09, 0, 0, TAU);
+    ctx.ellipse(x - w * 0.12, y - w * 0.06, w * 0.24, w * 0.1, 0, 0, TAU);
+    ctx.ellipse(x + w * 0.14, y - w * 0.05, w * 0.18, w * 0.08, 0, 0, TAU);
     ctx.fill();
   }
 
-  /* ---------- the six worlds ---------- */
-  const DRAW = {
-    park(ctx, e) {
-      hills(ctx, e.x * 0.06, e.W, e.H, e.hy + 6, e.H * 0.08, 140, '#A9D69A', 0.5);
-      hills(ctx, e.x * 0.18, e.W, e.H, e.hy + e.H * 0.07, e.H * 0.06, 90, '#7FC27A', 2.1);
-      ctx.fillStyle = '#69B46A'; ctx.fillRect(0, e.hy + e.H * 0.08, e.W, e.ry - e.hy);
-      tiles(e.x * 0.32, 120, e.W, (i, x) => {
-        const s = e.H * lerp(0.12, 0.18, rnd(i, 4));
-        roundTree(ctx, x + 60 * rnd(i, 1), e.hy + e.H * 0.13, s, '#3E9A4E', '#56B562');
+  /* ---------- the six sections ---------- */
+  // each draws far + mid layers; e has W,H,hy (horizon), x (world px), t, L (light), T (tint), haze(c,k), S (season)
+  const STAGE = {
+    town(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.03, W, H, hy - 2, H * 0.1, 220, haze('#7F95AB', 0.55), 1.3);
+      cone(ctx, W * 0.72 - (e.x * 0.01) % (W * 1.6), hy - 4, H * 0.2, H * 0.26, haze('#6E84A0', 0.6), e.S.snow);
+      ridge(ctx, e.x * 0.08, W, H, hy + H * 0.03, H * 0.06, 150, haze('#5F7C70', 0.3), 4.1);
+      const top = hy + H * 0.05;
+      ctx.fillStyle = T('#86B764'); ctx.fillRect(0, top, W, H - top);
+      for (let k = 0; k < 6; k++) { // paddies with water glints
+        const y = top + (H * 0.2) * (k / 6);
+        ctx.fillStyle = k % 2 ? rgba('#C9E6EE', 0.18 * (1 - e.L.night)) : rgba('#2D5A2A', 0.12);
+        ctx.fillRect(0, y, W, H * 0.012 + k * 0.8);
+      }
+      tiles(e.x * 0.3, 210, W, (i, x) => {
+        if (rnd(i, 2) < 0.55) return;
+        const hx = x + 80 * rnd(i, 3), hy2 = top + H * 0.045, s = H * lerp(0.07, 0.1, rnd(i, 4));
+        ctx.fillStyle = T(rnd(i, 5) > 0.5 ? '#E9E3D6' : '#D7DCE0'); ctx.fillRect(hx - s * 0.6, hy2 - s * 0.5, s * 1.2, s * 0.5);
+        ctx.fillStyle = T(rnd(i, 6) > 0.5 ? '#3E4652' : '#6E3B34');
+        ctx.beginPath(); ctx.moveTo(hx - s * 0.75, hy2 - s * 0.48); ctx.lineTo(hx - s * 0.45, hy2 - s * 0.85); ctx.lineTo(hx + s * 0.45, hy2 - s * 0.85); ctx.lineTo(hx + s * 0.75, hy2 - s * 0.48); ctx.closePath(); ctx.fill();
+        if (e.L.night > 0.4) { ctx.fillStyle = '#FFD27A'; ctx.fillRect(hx - s * 0.3, hy2 - s * 0.36, s * 0.18, s * 0.14); ctx.fillRect(hx + s * 0.12, hy2 - s * 0.36, s * 0.18, s * 0.14); }
       });
-      tiles(e.x * 0.75, 70, e.W, (i, x) => {
-        const yy = e.ry - 4;
-        for (let k = 0; k < 4; k++) {
-          ctx.fillStyle = ['#FF7FA6', '#FFE16B', '#FFFFFF', '#B58CFF'][Math.floor(rnd(i, k + 9) * 4)];
-          ctx.beginPath(); ctx.arc(x + rnd(i, k) * 70, yy - rnd(i, k + 20) * e.H * 0.05, 2.2, 0, TAU); ctx.fill();
-        }
-        if (rnd(i, 33) > 0.86) { // bench
-          ctx.fillStyle = '#8A5A33'; ctx.fillRect(x + 10, yy - 14, 30, 4); ctx.fillRect(x + 10, yy - 22, 30, 3);
-          ctx.fillRect(x + 12, yy - 14, 3, 12); ctx.fillRect(x + 35, yy - 14, 3, 12);
-        }
+      const ph = H * 0.2, tw = 230; // poles and wires
+      tiles(e.x * 0.55, tw, W, (i, x) => {
+        const px = x + 30, base = top + H * 0.1;
+        ctx.strokeStyle = rgba(T('#26313A'), 0.7); ctx.lineWidth = 1;
+        for (const k of [0.94, 0.86]) { ctx.beginPath(); ctx.moveTo(px, base - ph * k); ctx.quadraticCurveTo(px + tw / 2, base - ph * k + 12, px + tw, base - ph * k); ctx.stroke(); }
+        ctx.fillStyle = T('#4B4038'); ctx.fillRect(px - 2, base - ph, 4, ph);
       });
-      for (let b = 0; b < 2; b++) { // butterflies
-        const bx = ((e.t * 30 + b * 170) % (e.W + 60)) - 30, by = e.hy + e.H * 0.05 + Math.sin(e.t * 2 + b) * 12;
-        const f = Math.abs(Math.sin(e.t * 14 + b)) * 5 + 1;
-        ctx.fillStyle = b ? '#FFD84D' : '#FFFFFF';
-        ctx.beginPath(); ctx.ellipse(bx - 3, by, f, 4, 0, 0, TAU); ctx.ellipse(bx + 3, by, f, 4, 0, 0, TAU); ctx.fill();
+    },
+    cedar(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.03, W, H, hy - 6, H * 0.14, 180, haze('#55745F', 0.45), 2.2);
+      ridge(ctx, e.x * 0.07, W, H, hy + H * 0.02, H * 0.1, 120, haze('#3C5D49', 0.25), 5.5);
+      tiles(e.x * 0.12, 26, W, (i, x) => cedar(ctx, x + 10 * rnd(i, 1), hy + H * 0.06, H * lerp(0.12, 0.17, rnd(i, 2)), haze('#2C5040', 0.18)));
+      ctx.fillStyle = T('#24402F'); ctx.fillRect(0, hy + H * 0.05, W, H);
+      tiles(e.x * 0.32, 34, W, (i, x) => cedar(ctx, x + 14 * rnd(i, 3), hy + H * 0.2, H * lerp(0.22, 0.32, rnd(i, 4)), T(rnd(i, 5) > 0.5 ? '#1E3D2F' : '#183428')));
+      if (e.L.night < 0.6) { // light shafts
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        tiles(e.x * 0.2, 320, W, (i, x) => {
+          if (rnd(i, 7) < 0.4) return;
+          const g = ctx.createLinearGradient(x, 0, x - 120, H);
+          g.addColorStop(0, `rgba(255,236,190,${0.12 * (1 - e.L.night)})`); g.addColorStop(1, 'rgba(255,236,190,0)');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 50, 0); ctx.lineTo(x - 70, H); ctx.lineTo(x - 140, H); ctx.closePath(); ctx.fill();
+        });
+        ctx.restore();
       }
     },
-    inaka(ctx, e) {
-      peaks(ctx, e.x * 0.05, e.W, e.H, e.hy + 4, e.H * 0.12, e.H * 0.22, 260, '#8FA6C4', '#F4F7FB', 11);
-      hills(ctx, e.x * 0.14, e.W, e.H, e.hy + e.H * 0.05, e.H * 0.04, 120, '#6E9C62', 1);
-      const top = e.hy + e.H * 0.06;
-      ctx.fillStyle = '#7DBF5A'; ctx.fillRect(0, top, e.W, e.ry - top);
-      const rows = 6;
-      for (let k = 0; k < rows; k++) { // paddy rows
-        const y = top + (e.ry - top) * (k / rows);
-        ctx.fillStyle = k % 2 ? 'rgba(255,255,255,0.10)' : 'rgba(30,90,40,0.12)';
-        ctx.fillRect(0, y, e.W, (e.ry - top) / rows * 0.5);
-      }
-      tiles(e.x * 0.3, 260, e.W, (i, x) => {
-        if (rnd(i, 2) > 0.45) house(ctx, x + 90 * rnd(i, 5), top + e.H * 0.05, e.H * 0.12, '#EDE3CF', '#47505E', e.night > 0.5);
-      });
-      const poleY = e.ry - 2, ph = e.H * 0.22, tw = 190; // utility poles + sagging wires
-      tiles(e.x * 0.75, tw, e.W, (i, x) => {
-        const px = x + 40;
-        ctx.strokeStyle = 'rgba(30,30,40,0.7)'; ctx.lineWidth = 1;
-        for (const dy of [0.92, 0.82]) {
-          ctx.beginPath(); ctx.moveTo(px, poleY - ph * dy);
-          ctx.quadraticCurveTo(px + tw / 2, poleY - ph * dy + 14, px + tw, poleY - ph * dy); ctx.stroke();
-        }
-        ctx.fillStyle = '#5A4A3C'; ctx.fillRect(px - 2.5, poleY - ph, 5, ph);
-        ctx.fillRect(px - 12, poleY - ph * 0.9, 24, 3);
-      });
+    hairpin(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.02, W, H, hy - H * 0.08, H * 0.12, 260, haze('#8EA2B6', 0.6), 0.7);
+      ridge(ctx, e.x * 0.05, W, H, hy - H * 0.01, H * 0.12, 190, haze('#6C8696', 0.45), 3.3);
+      // a far slope with the switchbacks you will climb
+      const sx = W * 0.62 - (e.x * 0.06) % (W * 1.8), sb = hy + H * 0.04;
+      ctx.fillStyle = haze('#58745E', 0.3); ctx.beginPath(); ctx.moveTo(sx - W * 0.35, sb); ctx.quadraticCurveTo(sx, sb - H * 0.3, sx + W * 0.35, sb); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = rgba('#E9ECEF', 0.55 * (1 - e.L.night * 0.6)); ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let k = 0; k < 6; k++) { const y = sb - H * 0.03 - k * H * 0.035, w2 = W * (0.22 - k * 0.03); ctx.lineTo(sx + (k % 2 ? w2 : -w2), y); }
+      ctx.stroke();
+      ctx.fillStyle = T('#4D6A45'); ctx.fillRect(0, hy + H * 0.05, W, H);
+      tiles(e.x * 0.3, 48, W, (i, x) => roundTree(ctx, x + 20 * rnd(i, 1), hy + H * 0.16 + rnd(i, 2) * 6, H * lerp(0.12, 0.18, rnd(i, 3)), T(e.S.leaf[Math.floor(rnd(i, 4) * e.S.leaf.length)]), T('#4A3A2C')));
     },
-    sea(ctx, e) {
-      const seaTop = e.hy + 2, seaBot = e.hy + (e.ry - e.hy) * 0.55;
-      const g = ctx.createLinearGradient(0, seaTop, 0, seaBot);
-      g.addColorStop(0, e.night > 0.5 ? '#1B2F57' : '#2E86C9'); g.addColorStop(1, e.night > 0.5 ? '#14284A' : '#62B7E3');
-      ctx.fillStyle = g; ctx.fillRect(0, seaTop, e.W, seaBot - seaTop);
-      tiles(e.x * 0.04, 400, e.W, (i, x) => { // islands
-        if (rnd(i, 1) > 0.5) { ctx.fillStyle = '#5E7F9A'; ctx.beginPath(); ctx.ellipse(x + 200 * rnd(i, 2), seaTop + 2, 50 + 40 * rnd(i, 3), 12 + 10 * rnd(i, 4), 0, Math.PI, TAU); ctx.fill(); }
-      });
-      ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.5;
-      for (let k = 0; k < 18; k++) { // sparkles
-        const sx = ((k * 97 - e.x * 0.1 + e.t * 8) % e.W + e.W) % e.W, sy = seaTop + 6 + (k * 37 % 100) / 100 * (seaBot - seaTop - 10);
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 6 + Math.sin(e.t * 3 + k) * 3, sy); ctx.stroke();
-      }
-      tiles(e.x * 0.1, 300, e.W, (i, x) => { // sailboats
-        if (rnd(i, 7) > 0.55) {
-          const bx = x + 150 * rnd(i, 8), by = seaTop + (seaBot - seaTop) * 0.4 + Math.sin(e.t * 1.5 + i) * 1.5;
-          ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.moveTo(bx, by - 2); ctx.lineTo(bx, by - 26); ctx.lineTo(bx + 14, by - 4); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = '#C0392B'; ctx.fillRect(bx - 10, by - 2, 26, 4);
-        }
-      });
-      ctx.fillStyle = '#EBD9A7'; ctx.fillRect(0, seaBot, e.W, e.ry - seaBot); // beach
-      tiles(e.x * 0.4, 520, e.W, (i, x) => { // lighthouse
-        if (rnd(i, 12) > 0.6) {
-          const lx = x + 200, ly = seaBot + 4, h = e.H * 0.26;
-          ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.moveTo(lx - 10, ly); ctx.lineTo(lx - 6, ly - h); ctx.lineTo(lx + 6, ly - h); ctx.lineTo(lx + 10, ly); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = '#D7262E'; for (let k = 1; k < 4; k++) ctx.fillRect(lx - 9 + k * 0.6, ly - h * k / 4, 18 - k * 1.2, h * 0.09);
-          ctx.fillStyle = '#333'; ctx.fillRect(lx - 8, ly - h - 10, 16, 10);
-          ctx.fillStyle = e.night > 0.4 ? '#FFE27A' : '#F6F2C2'; ctx.fillRect(lx - 5, ly - h - 8, 10, 6);
-          if (e.night > 0.4) {
-            const a = Math.sin(e.t * 1.2);
-            ctx.fillStyle = `rgba(255,232,140,${0.22 * e.night})`;
-            ctx.beginPath(); ctx.moveTo(lx, ly - h - 5); ctx.lineTo(lx + a * 220, ly - h - 40); ctx.lineTo(lx + a * 220, ly - h + 30); ctx.closePath(); ctx.fill();
-          }
-        }
-      });
-      for (let k = 0; k < 3; k++) { // gulls
-        const gx = ((e.t * (24 + k * 6) + k * 220) % (e.W + 40)) - 20, gy = e.hy - e.H * (0.12 + k * 0.06) + Math.sin(e.t * 2 + k) * 6;
-        const f = Math.sin(e.t * 8 + k) * 4;
-        ctx.strokeStyle = '#2B2B2B'; ctx.lineWidth = 1.6;
-        ctx.beginPath(); ctx.moveTo(gx - 8, gy - f); ctx.quadraticCurveTo(gx - 4, gy - 4, gx, gy); ctx.quadraticCurveTo(gx + 4, gy - 4, gx + 8, gy - f); ctx.stroke();
-      }
+    steep(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.03, W, H, hy - H * 0.1, H * 0.2, 150, haze('#6F8090', 0.4), 1.9, 0.6);
+      ctx.fillStyle = T('#6E6359'); ctx.beginPath(); ctx.moveTo(0, H); // rock cut
+      for (let x = 0; x <= W + 8; x += 8) { const X = (x + e.x * 0.3) / 60; ctx.lineTo(x, hy + H * 0.02 - H * 0.12 * (0.6 + 0.25 * Math.sin(X) + 0.15 * Math.sin(X * 2.7))); }
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = rgba(T('#4E453E'), 0.6); ctx.lineWidth = 1;
+      for (let k = 0; k < 5; k++) { const y = hy + H * (0.0 + k * 0.035); ctx.beginPath(); ctx.moveTo(0, y); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, y + Math.sin((x + e.x * 0.3) / 40 + k) * 3); ctx.stroke(); }
+      tiles(e.x * 0.3, 70, W, (i, x) => { if (rnd(i, 9) > 0.5) roundTree(ctx, x, hy - H * 0.05 + rnd(i, 1) * H * 0.05, H * 0.08, T(e.S.leaf[i & 1 ? 0 : 2] || '#4E7A3E'), T('#3E342A')); });
     },
-    touge(ctx, e) {
-      peaks(ctx, e.x * 0.04, e.W, e.H, e.hy + 10, e.H * 0.28, e.H * 0.42, 300, '#6C7FA0', '#FFFFFF', 21);
-      peaks(ctx, e.x * 0.12, e.W, e.H, e.hy + e.H * 0.08, e.H * 0.14, e.H * 0.24, 200, '#4E6B5C', null, 31);
-      ctx.fillStyle = '#3F6B4A'; ctx.fillRect(0, e.hy + e.H * 0.07, e.W, e.ry - e.hy);
-      tiles(e.x * 0.35, 46, e.W, (i, x) => pine(ctx, x + 20 * rnd(i, 1), e.hy + e.H * 0.16 + rnd(i, 2) * 8, e.H * lerp(0.12, 0.2, rnd(i, 3)), rnd(i, 4) > 0.5 ? '#2F5A3B' : '#285034'));
-      tiles(e.x * 0.7, 60, e.W, (i, x) => pine(ctx, x + 20 * rnd(i, 5), e.ry - 4, e.H * lerp(0.16, 0.24, rnd(i, 6)), '#22472E'));
-      tiles(e.x * 0.75, 900, e.W, (i, x) => { // 峠 sign
-        const sx = x + 400, sy = e.ry - 4;
-        ctx.fillStyle = '#7A7A7A'; ctx.fillRect(sx - 2, sy - 64, 4, 64);
-        ctx.fillStyle = '#1E5BB8'; ctx.fillRect(sx - 34, sy - 82, 68, 26);
-        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.strokeRect(sx - 31, sy - 79, 62, 20);
-        ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 13px "Zen Kaku Gothic New", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('ローラー峠', sx, sy - 69);
+    plateau(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.02, W, H, hy, H * 0.07, 240, haze('#8A9BB4', 0.55), 2.8);
+      cone(ctx, W * 0.66 - (e.x * 0.015) % (W * 1.7), hy + 2, H * 0.3, H * 0.34, haze('#5D7393', 0.35), e.S.snow);
+      ctx.fillStyle = T(e.S.grass); ctx.fillRect(0, hy + H * 0.02, W, H);
+      ctx.strokeStyle = T(mix(e.S.grass, '#FFF3D6', 0.35)); ctx.lineWidth = 1.2; // susuki
+      tiles(e.x * 0.35, 9, W, (i, x) => {
+        const y = hy + H * (0.06 + rnd(i, 1) * 0.12), h = H * (0.03 + rnd(i, 2) * 0.03), sw = Math.sin(e.t * 1.6 + i * 0.3) * h * 0.25;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + sw * 0.5, y - h * 0.6, x + sw, y - h); ctx.stroke();
       });
+      tiles(e.x * 0.6, 60, W, (i, x) => { ctx.fillStyle = T('#7A5E44'); ctx.fillRect(x, hy + H * 0.17, 3, H * 0.04); });
+      ctx.fillStyle = T('#7A5E44'); ctx.fillRect(0, hy + H * 0.18, W, 2);
     },
-    storm(ctx, e) {
-      peaks(ctx, e.x * 0.04, e.W, e.H, e.hy + 10, e.H * 0.2, e.H * 0.36, 260, '#2C2A3A', null, 41);
-      tiles(e.x * 0.06, 700, e.W, (i, x) => { // volcano
-        const vx = x + 350, b = e.hy + 12, h = e.H * 0.34, top = 26;
-        ctx.fillStyle = '#231F2C'; ctx.beginPath(); ctx.moveTo(vx - 170, b); ctx.lineTo(vx - top, b - h); ctx.lineTo(vx + top, b - h); ctx.lineTo(vx + 170, b); ctx.closePath(); ctx.fill();
-        const glow = 0.6 + Math.sin(e.t * 3 + i) * 0.25;
-        ctx.fillStyle = `rgba(255,96,32,${glow})`; ctx.beginPath(); ctx.ellipse(vx, b - h, top, 6, 0, 0, TAU); ctx.fill();
-        ctx.strokeStyle = `rgba(255,120,40,${glow * 0.8})`; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(vx - 8, b - h + 2); ctx.quadraticCurveTo(vx - 30, b - h * 0.6, vx - 55, b - h * 0.25); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(vx + 10, b - h + 2); ctx.quadraticCurveTo(vx + 22, b - h * 0.55, vx + 48, b - h * 0.3); ctx.stroke();
-      });
-      ctx.fillStyle = '#2E3530'; ctx.fillRect(0, e.hy + e.H * 0.05, e.W, e.ry - e.hy);
-      tiles(e.x * 0.45, 56, e.W, (i, x) => pine(ctx, x + 20 * rnd(i, 1), e.hy + e.H * 0.17, e.H * lerp(0.1, 0.17, rnd(i, 2)), '#1C2620'));
-      tiles(e.x * 0.75, 90, e.W, (i, x) => {
-        ctx.fillStyle = '#4A4744'; const s = 6 + rnd(i, 3) * 12;
-        ctx.beginPath(); ctx.ellipse(x + 40 * rnd(i, 4), e.ry - 2, s, s * 0.6, 0, Math.PI, TAU); ctx.fill();
-      });
-    },
-    space(ctx, e) {
-      tiles(e.x * 0.02, 600, e.W, (i, x) => { // planets
-        if (rnd(i, 1) > 0.35) {
-          const px = x + 300 * rnd(i, 2), py = e.H * lerp(0.12, 0.42, rnd(i, 3)), r = e.H * lerp(0.05, 0.11, rnd(i, 4));
-          const c = ['#F2B705', '#9B6BFF', '#3FD0C9', '#FF6F91'][Math.floor(rnd(i, 5) * 4)];
-          const g = ctx.createRadialGradient(px - r * 0.4, py - r * 0.4, r * 0.1, px, py, r);
-          g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.25, c); g.addColorStop(1, '#1A1033');
-          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.fill();
-          if (rnd(i, 6) > 0.5) { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(px, py, r * 1.7, r * 0.4, -0.3, 0, TAU); ctx.stroke(); }
-        }
-      });
-      tiles(e.x * 0.25, 140, e.W, (i, x) => { // asteroids
-        if (rnd(i, 7) > 0.5) {
-          const ax = x + 100 * rnd(i, 8), ay = e.hy + e.H * lerp(-0.1, 0.12, rnd(i, 9)), s = 6 + 14 * rnd(i, 10);
-          ctx.fillStyle = '#6E6585'; ctx.beginPath();
-          for (let k = 0; k < 7; k++) { const a = (k / 7) * TAU + e.t * 0.3; const rr = s * (0.7 + 0.3 * rnd(i, 11 + k)); ctx.lineTo(ax + Math.cos(a) * rr, ay + Math.sin(a) * rr); }
-          ctx.closePath(); ctx.fill();
-        }
-      });
-      tiles(e.x * 0.75, 110, e.W, (i, x) => { // neon posts
-        const c = i % 2 ? '#3FF0FF' : '#FF4FD8';
-        ctx.fillStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 12; ctx.fillRect(x, e.ry - 40, 3, 40); ctx.shadowBlur = 0;
-      });
+    lake(ctx, e) {
+      const { W, H, hy, T, haze } = e;
+      ridge(ctx, e.x * 0.02, W, H, hy - 2, H * 0.08, 200, haze('#6D84A0', 0.5), 4.4);
+      const cx = W * 0.6 - (e.x * 0.012) % (W * 1.7), mh = H * 0.34, mw = H * 0.4;
+      cone(ctx, cx, hy, mh, mw, haze('#4F6B8C', 0.28), e.S.snow);
+      const wb = hy + H * 0.16;
+      const g = ctx.createLinearGradient(0, hy, 0, wb);
+      g.addColorStop(0, T('#5FA3B4')); g.addColorStop(1, T('#2F6E80'));
+      ctx.fillStyle = g; ctx.fillRect(0, hy, W, wb - hy);
+      ctx.save(); ctx.beginPath(); ctx.rect(0, hy, W, wb - hy); ctx.clip(); ctx.globalAlpha = 0.25; ctx.translate(0, hy * 1.55); ctx.scale(1, -0.55);
+      cone(ctx, cx, hy, mh, mw, haze('#4F6B8C', 0.28), false); ctx.restore();
+      ctx.strokeStyle = rgba('#FFFFFF', 0.4 * (1 - e.L.night * 0.5)); ctx.lineWidth = 1;
+      for (let k = 0; k < 16; k++) { const sx = ((k * 113 - e.x * 0.08 + e.t * 6) % W + W) % W, sy = hy + 4 + ((k * 37) % 100) / 100 * (wb - hy - 6); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 10, sy); ctx.stroke(); }
+      ctx.fillStyle = T(e.S.grass); ctx.fillRect(0, wb, W, H);
+      tiles(e.x * 0.4, 90, W, (i, x) => { if (rnd(i, 3) > 0.45) roundTree(ctx, x + 30 * rnd(i, 4), wb + H * 0.04, H * lerp(0.1, 0.15, rnd(i, 5)), T(e.S.leaf[Math.floor(rnd(i, 6) * e.S.leaf.length)]), T('#4A3A2C')); });
     },
   };
 
-  /* ---------- scene object ---------- */
   class World {
     constructor(canvas, opts = {}) {
       this.c = canvas; this.ctx = canvas.getContext('2d');
-      this.x = 0; this.t = 0; this.zone = 1; this.prevZone = 1; this.fade = 1; this.targetZone = 1; this.zoneSince = 0;
-      this.speed = 0; this.cadence = 0; this.crank = 0; this.wheel = 0; this.intensity = 0.4; this.day = 0.12; this.grade = 0;
-      this.parts = []; this.pops = []; this.flash = 0; this.nextBolt = 5; this._raf = null; this.compact = !!opts.compact;
-      this.onTheme = opts.onTheme || null;
-      this._stars = Array.from({ length: 90 }, (_, i) => [rnd(i, 1), rnd(i, 2) * 0.62, rnd(i, 3)]);
-      this._ro = new ResizeObserver(() => this.resize());
-      this._ro.observe(canvas);
-      this.resize();
+      this.compact = !!opts.compact; this.onStage = opts.onStage || null;
+      this.x = 0; this.t = 0; this.speed = 0; this.cadence = 0; this.crank = 0; this.wheel = 0;
+      this.intensity = 0.4; this.zone = 1; this.day = 0.12; this.p = 0; this.grade = 0; this.ang = 0;
+      this.stage = 0; this.prevStage = 0; this.fade = 1; this.finishIn = null; this.startX = 0;
+      this.dance = 0; this.parts = []; this.pops = []; this.S = season(); this._raf = null; this.remainKm = null;
+      this._stars = Array.from({ length: 80 }, (_, i) => [rnd(i, 1), rnd(i, 2) * 0.6, rnd(i, 3)]);
+      this._ro = new ResizeObserver(() => this.resize()); this._ro.observe(canvas); this.resize();
     }
     resize() {
-      const r = this.c.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = this.c.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
       this.W = Math.max(1, r.width); this.H = Math.max(1, r.height);
       this.c.width = Math.round(this.W * dpr); this.c.height = Math.round(this.H * dpr);
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     set(o) { Object.assign(this, o); }
-    setZone(z) {
-      z = clamp(z | 0, 1, 6);
-      if (z !== this.targetZone) { this.targetZone = z; this.zoneSince = this.t; }
-    }
-    jumpZone(z) { this.zone = this.prevZone = this.targetZone = clamp(z | 0, 1, 6); this.fade = 1; }
+    restart() { this.x = 0; this.startX = 0; this.stage = this.prevStage = 0; this.fade = 1; this.parts = []; this.pops = []; this.finishIn = null; }
     pop(emoji, text) { this.pops.push({ e: emoji, s: text, t0: this.t }); }
     start() {
       if (this._raf) return;
       let last = performance.now();
-      const loop = (now) => {
-        const dt = Math.min(0.05, (now - last) / 1000); last = now;
-        this.frame(dt);
-        this._raf = requestAnimationFrame(loop);
-      };
+      const loop = (now) => { const dt = Math.min(0.05, (now - last) / 1000); last = now; this.frame(dt); this._raf = requestAnimationFrame(loop); };
       this._raf = requestAnimationFrame(loop);
     }
     stop() { if (this._raf) cancelAnimationFrame(this._raf); this._raf = null; }
 
     frame(dt) {
-      const { ctx } = this;
-      const W = this.W, H = this.H;
+      const { ctx } = this; const W = this.W, H = this.H;
       this.t += dt;
-      const R = clamp(H * (this.compact ? 0.11 : 0.072), 12, 46);
-      const pxPerM = (R / 0.335) * 0.55;
+      const Hl = Math.max(H * 0.5, H - (this.inset || 0)); // layout height above any overlay
+      const R = clamp(Hl * (this.compact ? 0.075 : 0.062), 10, 52);
+      const pxPerM = (R / 0.335) * 0.5;
       const v = this.speed / 3.6;
       this.x += v * dt * pxPerM;
       this.wheel += (v / 0.335) * dt;
       this.crank += (this.cadence / 60) * TAU * dt;
-      if (this.targetZone !== this.zone && this.t - this.zoneSince > 2.5) {
-        this.prevZone = this.zone; this.zone = this.targetZone; this.fade = 0;
-        if (this.onTheme) this.onTheme(THEMES[this.zone]);
-      }
-      if (this.fade < 1) this.fade = Math.min(1, this.fade + dt / 1.6);
+      if (this.finishIn != null) { this.finishIn -= v * dt; if (this.finishIn < -60) this.finishIn = null; }
+      // section
+      const st = Course.stageAt(this.p);
+      if (st !== this.stage) { this.prevStage = this.stage; this.stage = st; this.fade = 0; if (this.onStage) this.onStage(Course.STAGES[st]); }
+      if (this.fade < 1) this.fade = Math.min(1, this.fade + dt / 2.2);
+      // road tilt follows the gradient (exaggerated for readability)
+      const target = Math.atan((this.grade / 100) * 2.4);
+      this.ang += (clamp(target, -0.1, 0.27) - this.ang) * Math.min(1, dt * 1.5);
+      const wantDance = this.cadence > 20 && (this.intensity > 1.12 || (this.grade > 9 && this.intensity > 0.9)) ? 1 : 0;
+      this.dance += (wantDance - this.dance) * Math.min(1, dt * 3);
 
+      const L = light(this.day);
       const e = {
-        W, H, x: this.x, t: this.t, R,
-        hy: H * (this.compact ? 0.52 : 0.56), ry: H * (this.compact ? 0.74 : 0.79), gy: H * (this.compact ? 0.9 : 0.9),
-        day: this.day, night: nightness(this.day),
+        W, H, R, t: this.t, x: this.x, L, T: tintFn(L), S: this.S, pxPerM,
+        Hl, hy: Hl * (this.compact ? 0.5 : 0.52), rx: W * (this.compact ? 0.7 : 0.36), base: Hl * (this.compact ? 0.8 : 0.79),
       };
-      if (this.fade < 1) {
-        this.drawWorld(this.prevZone, e, 1);
-        ctx.save(); ctx.globalAlpha = this.fade; this.drawWorld(this.zone, e, this.fade); ctx.restore();
-      } else this.drawWorld(this.zone, e, 1);
+      e.haze = (c, k) => tintFn(L)(mix(c, L.bot, k));
+      e.slope = Math.tan(this.ang);
+      e.roadY = (x) => e.base - (x - e.rx) * e.slope;
 
+      this.drawSky(e);
+      if (this.fade < 1) {
+        STAGE[STAGE_KEYS[this.prevStage]](ctx, e);
+        ctx.save(); ctx.globalAlpha = this.fade; STAGE[STAGE_KEYS[this.stage]](ctx, e); ctx.restore();
+      } else STAGE[STAGE_KEYS[this.stage]](ctx, e);
+      this.drawRoadside(e);
+      this.drawRoad(e);
+      this.drawGates(e);
       this.drawRider(e);
-      this.drawParticles(e, dt);
+      this.drawFx(e, dt);
       this.drawPops(e);
-      if (this.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${this.flash})`; ctx.fillRect(0, 0, W, H); this.flash = Math.max(0, this.flash - dt * 2.5); }
     }
 
-    drawWorld(z, e, alpha) {
-      const { ctx } = this;
-      const key = THEMES[z].key;
-      const { W, H } = e;
-      // sky
-      let sky = skyAt(e.day);
-      let night = e.night;
-      if (key === 'storm') { sky = { top: mixHex(sky.top, '#1E1B2B', 0.8), bot: mixHex(sky.bot, '#4B4A5E', 0.8) }; night = Math.max(night, 0.35); }
-      if (key === 'space') { sky = { top: '#05030F', bot: '#1A0E3A' }; night = 1; }
-      const g = ctx.createLinearGradient(0, 0, 0, e.ry);
-      g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
+    drawSky(e) {
+      const { ctx } = this; const { W, H, L } = e;
+      const g = ctx.createLinearGradient(0, 0, 0, e.hy + H * 0.05);
+      g.addColorStop(0, L.top); g.addColorStop(1, L.bot);
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      if (night > 0.25 || key === 'space') { // stars
+      if (L.night > 0.2) {
         ctx.fillStyle = '#FFFFFF';
-        for (const [sx, sy, sz] of this._stars) {
-          const a = (key === 'space' ? 1 : (night - 0.25) / 0.75) * (0.5 + 0.5 * Math.sin(this.t * 2 + sz * 20));
-          ctx.globalAlpha = alpha * clamp(a, 0, 1);
-          const px = ((sx * W - e.x * (key === 'space' ? 0.01 : 0)) % W + W) % W;
-          ctx.fillRect(px, sy * e.hy, sz > 0.8 ? 2 : 1.2, sz > 0.8 ? 2 : 1.2);
-        }
-        ctx.globalAlpha = alpha;
+        for (const [sx, sy, sz] of this._stars) { ctx.globalAlpha = clamp((L.night - 0.2) / 0.8, 0, 1) * (0.45 + 0.55 * Math.sin(this.t * 1.5 + sz * 30)); ctx.fillRect(sx * W, sy * e.hy, sz > 0.85 ? 2 : 1.1, sz > 0.85 ? 2 : 1.1); }
+        ctx.globalAlpha = 1;
       }
-      if (key === 'space') {
-        const ng = ctx.createRadialGradient(W * 0.7, H * 0.2, 0, W * 0.7, H * 0.2, W * 0.5);
-        ng.addColorStop(0, 'rgba(155,107,255,0.35)'); ng.addColorStop(1, 'rgba(155,107,255,0)');
-        ctx.fillStyle = ng; ctx.fillRect(0, 0, W, H);
-      } else {
-        this.drawCelestial(e, key);
-        const cc = key === 'storm' ? '#3A3848' : night > 0.6 ? '#3A4470' : '#FFFFFF';
-        tiles(e.x * 0.02 + this.t * 6, 260, W, (i, x) => {
-          if (rnd(i, 50) > (key === 'storm' ? 0.05 : 0.45)) cloud(ctx, x + 100 * rnd(i, 51), e.hy * lerp(0.15, 0.55, rnd(i, 52)), lerp(28, 52, rnd(i, 53)) * (key === 'storm' ? 1.6 : 1), cc);
+      const d = L.d;
+      if (d > 0.01 && d < 0.68) { // sun
+        const k = (d - 0.01) / 0.67, sx = W * (0.08 + 0.84 * k), sy = e.hy - Math.sin(k * Math.PI) * e.hy * 0.78;
+        const warm = L.warm > 0.3;
+        const gg = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.25);
+        gg.addColorStop(0, warm ? 'rgba(255,190,120,0.55)' : 'rgba(255,248,220,0.5)'); gg.addColorStop(1, 'rgba(255,240,210,0)');
+        ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = warm ? '#FFC58A' : '#FFF8E0'; ctx.beginPath(); ctx.arc(sx, sy, Math.max(8, H * 0.03), 0, TAU); ctx.fill();
+      } else if (d > 0.7 || d < 0.03) { // moon
+        const k = d > 0.7 ? (d - 0.7) / 0.33 : (d + 0.3) / 0.33, mx = W * (0.15 + 0.7 * k), my = e.hy - Math.sin(k * Math.PI) * e.hy * 0.6;
+        ctx.fillStyle = '#F3EFDC'; ctx.beginPath(); ctx.arc(mx, my, Math.max(7, H * 0.022), 0, TAU); ctx.fill();
+        ctx.fillStyle = L.top; ctx.beginPath(); ctx.arc(mx + H * 0.009, my - H * 0.005, Math.max(6, H * 0.019), 0, TAU); ctx.fill();
+      }
+      const cc = rgba(mix('#FFFFFF', L.bot, 0.25), L.night > 0.6 ? 0.18 : 0.75);
+      tiles(e.x * 0.015 + this.t * 4, 380, W, (i, x) => { if (rnd(i, 30) > 0.4) cloud(ctx, x + 120 * rnd(i, 31), e.hy * lerp(0.18, 0.6, rnd(i, 32)), lerp(120, 240, rnd(i, 33)), cc); });
+    }
+
+    /* things standing on the far edge of the road (guardrail, signs, crowd) */
+    drawRoadside(e) {
+      const { ctx } = this; const { W, H, T, R } = e;
+      const key = STAGE_KEYS[this.stage];
+      const edge = (x) => e.roadY(x) - 1;
+      if (key === 'hairpin' || key === 'steep' || key === 'lake') { // guardrail
+        ctx.strokeStyle = T('#E6E8EA'); ctx.lineWidth = Math.max(2, R * 0.12);
+        ctx.beginPath(); ctx.moveTo(0, edge(0) - R * 0.55); ctx.lineTo(W, edge(W) - R * 0.55); ctx.stroke();
+        ctx.fillStyle = T('#B9BDC2');
+        tiles(e.x, 80, W, (i, x) => ctx.fillRect(x, edge(x) - R * 0.6, 3, R * 0.6));
+      }
+      // distance board every 600px of travel
+      tiles(e.x, 1400, W, (i, x) => {
+        const bx = x + 700, by = edge(bx);
+        if (this.remainKm != null && this.remainKm > 0.1) {
+          ctx.fillStyle = T('#8C9196'); ctx.fillRect(bx - 1.5, by - R * 2.2, 3, R * 2.2);
+          ctx.font = `700 ${Math.round(R * 0.42)}px "Zen Kaku Gothic New", system-ui, sans-serif`;
+          const txt = `ゴールまで ${Math.ceil(this.remainKm)}km`, bw = ctx.measureText(txt).width + R * 0.6;
+          ctx.fillStyle = T('#1C5FB0'); ctx.fillRect(bx - bw / 2, by - R * 2.9, bw, R * 0.95);
+          ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(txt, bx, by - R * 2.42);
+        }
+      });
+      // gradient warning sign in steep section
+      if (key === 'steep') tiles(e.x, 900, W, (i, x) => {
+        const sx = x + 300, sy = edge(sx), s = R * 0.75;
+        ctx.fillStyle = T('#8C9196'); ctx.fillRect(sx - 1.5, sy - R * 2.2, 3, R * 2.2);
+        ctx.save(); ctx.translate(sx, sy - R * 2.5); ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = '#FFC31F'; ctx.fillRect(-s * 0.7, -s * 0.7, s * 1.4, s * 1.4); ctx.strokeStyle = '#1A1A12'; ctx.lineWidth = 2; ctx.strokeRect(-s * 0.6, -s * 0.6, s * 1.2, s * 1.2);
+        ctx.restore();
+        ctx.fillStyle = '#1A1A12'; ctx.font = `800 ${Math.round(R * 0.48)}px "Saira Condensed", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.round(this.grade)}%`, sx, sy - R * 2.5);
+      });
+      // roadside crowd: grows with effort, always there on the steep wall and at the lake
+      const crowd = clamp((this.zone - 3) / 3, 0, 1) * 0.55 + (key === 'steep' ? 0.22 : 0) + (this.finishIn != null && this.finishIn < 250 ? 0.6 : 0);
+      if (crowd > 0.05) {
+        const cols = ['#E5484D', '#2FB3A6', '#FFC31F', '#F2F2F2', '#3A6FD8', '#20272E'];
+        tiles(e.x, 34, W, (i, x) => {
+          if (rnd(i, 41) > crowd) return;
+          const px = x + 10 * rnd(i, 42), py = edge(px) - R * 0.1, h = R * lerp(1.3, 1.7, rnd(i, 43));
+          const jump = Math.max(0, Math.sin(this.t * 7 + i)) * R * 0.15 * crowd;
+          ctx.fillStyle = T(cols[Math.floor(rnd(i, 44) * cols.length)]);
+          ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px - h * 0.17, py - h * 0.75 - jump, h * 0.34, h * 0.6, h * 0.12) : ctx.rect(px - h * 0.17, py - h * 0.75 - jump, h * 0.34, h * 0.6); ctx.fill();
+          ctx.fillStyle = T('#2A2522'); ctx.fillRect(px - h * 0.12, py - h * 0.18 - jump, h * 0.09, h * 0.18 + jump); ctx.fillRect(px + h * 0.03, py - h * 0.18 - jump, h * 0.09, h * 0.18 + jump);
+          ctx.fillStyle = T('#E2B48C'); ctx.beginPath(); ctx.arc(px, py - h * 0.86 - jump, h * 0.12, 0, TAU); ctx.fill();
+          const arm = Math.sin(this.t * 9 + i * 1.7);
+          ctx.strokeStyle = T('#E2B48C'); ctx.lineWidth = Math.max(1.5, h * 0.06); ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(px + h * 0.14, py - h * 0.68 - jump); ctx.lineTo(px + h * 0.3, py - h * (1.0 + arm * 0.12) - jump); ctx.stroke();
+          if (rnd(i, 45) > 0.6) { // flag
+            const fx = px + h * 0.3, fy = py - h * (1.0 + arm * 0.12) - jump;
+            ctx.strokeStyle = T('#DDDDDD'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx, fy - h * 0.5); ctx.stroke();
+            ctx.fillStyle = cols[Math.floor(rnd(i, 46) * 3)];
+            const wv = Math.sin(this.t * 10 + i) * h * 0.06;
+            ctx.beginPath(); ctx.moveTo(fx, fy - h * 0.5); ctx.lineTo(fx + h * 0.4, fy - h * 0.42 + wv); ctx.lineTo(fx, fy - h * 0.3); ctx.closePath(); ctx.fill();
+          }
+          if (rnd(i, 47) > 0.96) { // board
+            ctx.fillStyle = '#FFFFFF'; ctx.fillRect(px - h * 0.45, py - h * 1.45 - jump, h * 0.9, h * 0.32);
+            ctx.fillStyle = '#E5484D'; ctx.font = `800 ${Math.round(h * 0.2)}px "Zen Kaku Gothic New", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(['がんばれ!', 'GO!', 'あと少し!', 'ファイト!'][i & 3], px, py - h * 1.29 - jump);
+          }
         });
       }
-      DRAW[key](ctx, { ...e, night });
-      // road
-      const rg = ctx.createLinearGradient(0, e.ry, 0, H);
-      if (key === 'space') { rg.addColorStop(0, '#1C0F3D'); rg.addColorStop(1, '#0B0620'); } else { rg.addColorStop(0, '#4A4D57'); rg.addColorStop(1, '#2F3138'); }
-      ctx.fillStyle = rg; ctx.fillRect(0, e.ry, W, H - e.ry);
-      ctx.fillStyle = key === 'space' ? '#3FF0FF' : '#D8D8D0'; ctx.fillRect(0, e.ry, W, 2);
-      const dash = 46, dy = e.ry + (H - e.ry) * 0.62;
-      ctx.fillStyle = key === 'space' ? '#FF4FD8' : '#F2F2EA';
-      for (let x = -((e.x) % dash) - dash; x < W; x += dash) ctx.fillRect(x, dy, dash * 0.5, 3);
-      // night shade over the land
-      if (night > 0 && key !== 'space') {
-        ctx.fillStyle = `rgba(8,12,40,${night * 0.5})`; ctx.fillRect(0, e.hy - H * 0.3, W, H);
-      }
-      // weather
-      if (key === 'storm') {
-        ctx.strokeStyle = 'rgba(190,200,230,0.45)'; ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let k = 0; k < 70; k++) {
-          const rx = (rnd(k, 61) * W + this.t * 60 - e.x * 0.1) % W, ry = (rnd(k, 62) * H + this.t * 700) % H;
-          ctx.moveTo((rx + W) % W, ry); ctx.lineTo((rx + W) % W - 5, ry + 14);
-        }
-        ctx.stroke();
-        if (alpha >= 1 && this.t > this.nextBolt) {
-          this.flash = 0.75; this.nextBolt = this.t + 3 + Math.random() * 5;
-          this._bolt = { x: W * (0.15 + Math.random() * 0.7), t: this.t };
-        }
-        if (this._bolt && this.t - this._bolt.t < 0.25) {
-          ctx.strokeStyle = '#FFFBD0'; ctx.lineWidth = 3; ctx.beginPath();
-          let bx = this._bolt.x, by = 0; ctx.moveTo(bx, by);
-          for (let k = 0; k < 6; k++) { bx += (rnd(k, this._bolt.t) - 0.5) * 40; by += e.hy / 6; ctx.lineTo(bx, by); }
-          ctx.stroke();
-        }
-      }
     }
 
-    drawCelestial(e, key) {
-      if (key === 'storm') return;
-      const { ctx } = this;
-      const d = ((e.day % 1) + 1) % 1;
-      if (d > 0.02 && d < 0.7) {
-        const k = (d - 0.02) / 0.68;
-        const sx = e.W * (0.1 + 0.8 * k), sy = e.hy - Math.sin(k * Math.PI) * e.hy * 0.75;
-        const warm = k > 0.75 || k < 0.12;
-        const gg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 46);
-        gg.addColorStop(0, warm ? 'rgba(255,170,90,0.55)' : 'rgba(255,245,200,0.55)'); gg.addColorStop(1, 'rgba(255,240,200,0)');
-        ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(sx, sy, 46, 0, TAU); ctx.fill();
-        ctx.fillStyle = warm ? '#FFB36B' : '#FFF4C2'; ctx.beginPath(); ctx.arc(sx, sy, 14, 0, TAU); ctx.fill();
-      }
-      if (d > 0.7 || d < 0.04) {
-        const dd = d > 0.7 ? (d - 0.7) / 0.34 : (d + 0.3) / 0.34;
-        const mx = e.W * (0.15 + 0.7 * dd), my = e.hy - Math.sin(dd * Math.PI) * e.hy * 0.65;
-        ctx.fillStyle = '#F5F1DC'; ctx.beginPath(); ctx.arc(mx, my, 12, 0, TAU); ctx.fill();
-        ctx.fillStyle = skyAt(e.day).top; ctx.beginPath(); ctx.arc(mx + 5, my - 3, 10, 0, TAU); ctx.fill();
+    drawRoad(e) {
+      const { ctx } = this; const { W, H, T } = e;
+      const y0 = e.roadY(0), y1 = e.roadY(W);
+      ctx.fillStyle = T('#3C3F46'); ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y1); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = T('#E9E9E2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, y0 + 1); ctx.lineTo(W, y1 + 1); ctx.stroke();
+      // centre dashes on the near half of the road
+      const off = H * 0.115, dash = 54;
+      ctx.strokeStyle = T('#F1F1EA'); ctx.lineWidth = Math.max(2, H * 0.006);
+      ctx.beginPath();
+      for (let x = -(e.x % dash) - dash; x < W; x += dash) { ctx.moveTo(x, e.roadY(x) + off); ctx.lineTo(x + dash * 0.5, e.roadY(x + dash * 0.5) + off); }
+      ctx.stroke();
+      // painted messages on the tarmac now and then
+      tiles(e.x, 2200, W, (i, x) => {
+        const mx = x + 1100;
+        ctx.save(); ctx.translate(mx, e.roadY(mx) + off * 1.6); ctx.rotate(-this.ang); ctx.scale(1, 0.45);
+        ctx.fillStyle = rgba(T('#F4F4EE'), 0.55); ctx.font = `800 italic ${Math.round(e.R * 1.4)}px "Saira Condensed", system-ui, sans-serif`; ctx.textAlign = 'center';
+        ctx.fillText(['ALLEZ', 'GO GO', '登れ', 'KOM'][((i % 4) + 4) % 4], 0, 0); ctx.restore();
+      });
+    }
+
+    gate(e, gx, text, color) {
+      const { ctx } = this; const R = e.R;
+      const top = e.roadY(gx) - R * 4.6, h = R * 0.9, w = R * 5.2;
+      ctx.fillStyle = '#20272E'; ctx.fillRect(gx - w / 2, top, R * 0.22, e.roadY(gx) + e.H * 0.2 - top); ctx.fillRect(gx + w / 2 - R * 0.22, top, R * 0.22, e.roadY(gx) + e.H * 0.2 - top);
+      ctx.fillStyle = color; ctx.fillRect(gx - w / 2, top, w, h);
+      ctx.fillStyle = color === '#FFC31F' ? '#1A1A12' : '#FFFFFF'; ctx.font = `800 italic ${Math.round(h * 0.7)}px "Saira Condensed", system-ui, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, gx, top + h * 0.54);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      for (let k = 0; k < 8; k++) ctx.fillRect(gx - w / 2 + k * w / 8, top + h, w / 16, R * 0.15);
+    }
+    drawGates(e) {
+      const sx = e.rx + e.R * 3 - (this.x - this.startX);
+      if (sx > -e.R * 4 && sx < e.W + e.R * 4) this.gate(e, sx, 'START', '#FFC31F');
+      if (this.finishIn != null) {
+        const fx = e.rx + this.finishIn * e.pxPerM;
+        if (fx > -e.R * 4 && fx < e.W + e.R * 4) this.gate(e, fx, 'FINISH', '#E5484D');
       }
     }
 
     drawRider(e) {
-      const { ctx } = this;
-      const R = e.R, I = this.intensity;
-      const bx = e.W * (this.compact ? 0.5 : 0.34), gy = e.gy;
-      const bob = Math.sin(this.crank * 2) * R * 0.035 * Math.min(1, this.cadence / 60);
-      const P = (x, y) => [bx + x * R, gy + y * R];
-      const rear = P(-1.5, -1), front = P(1.5, -1), bb = P(-0.25, -0.8);
-      const seat = P(-0.8, -2.35), headTop = P(1.05, -2.2), headBot = P(1.15, -1.75), bar = P(1.25, -2.45);
+      const { ctx } = this; const R = e.R, D = this.dance;
+      const cy = e.roadY(e.rx) + e.Hl * 0.055;
+      ctx.save();
+      ctx.translate(e.rx, cy);
+      const rock = D * Math.sin(this.crank) * 0.06;
+      ctx.rotate(-this.ang);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(0, 2, R * 2.3, R * 0.14, 0, 0, TAU); ctx.fill();
+      ctx.rotate(rock);
+      const P = (x, y) => [x * R, y * R];
+      const rear = P(-1.55, -1), front = P(1.55, -1), bb = P(-0.2, -0.78);
+      const seat = P(-0.82, -2.42), ht = P(1.02, -2.2), hb = P(1.1, -1.82), hood = P(1.42, -2.36);
+      const bob = Math.sin(this.crank * 2) * R * 0.03 * Math.min(1, this.cadence / 60);
+      const hip = [lerp(seat[0] + R * 0.05, -0.32 * R, D) + Math.sin(this.crank) * D * R * 0.08, lerp(seat[1] - R * 0.14, -2.78 * R, D) + bob];
+      const sh = [lerp(0.5 * R, 0.85 * R, D), lerp(-3.28 * R, -3.38 * R, D) + bob * 0.6];
+      const ca = this.crank, cl = R * 0.5;
+      const pA = [bb[0] + Math.cos(ca) * cl, bb[1] + Math.sin(ca) * cl], pB = [bb[0] - Math.cos(ca) * cl, bb[1] - Math.sin(ca) * cl];
+      const KIT = '#FFC31F', KIT2 = '#14181C', SKIN = '#D9A57E';
 
-      // shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(bx, gy + 2, R * 2.4, R * 0.18, 0, 0, TAU); ctx.fill();
-      // aura (Z6)
-      if (this.zone >= 6) {
-        for (let k = 0; k < 6; k++) {
-          const a = this.t * 8 + k;
-          const fx = bx - R * (1.5 + k * 0.5) - Math.sin(a) * 3, fy = gy - R * (1.3 + (k % 3) * 0.4);
-          const fg = ctx.createRadialGradient(fx, fy, 0, fx, fy, R * (1.1 - k * 0.12));
-          fg.addColorStop(0, 'rgba(255,240,150,0.9)'); fg.addColorStop(0.5, 'rgba(255,120,30,0.6)'); fg.addColorStop(1, 'rgba(255,60,0,0)');
-          ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(fx, fy, R * (1.1 - k * 0.12), 0, TAU); ctx.fill();
-        }
-      }
-      // speed lines
-      if (this.speed > 38 || this.zone >= 5) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
-        for (let k = 0; k < 5; k++) {
-          const ly = gy - R * (0.6 + k * 0.55), len = R * (2 + rnd(k, Math.floor(this.t * 6)) * 2.5);
-          const lx = bx - R * 2.6 - ((this.t * 900 + k * 70) % (R * 6));
-          ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx - len, ly); ctx.stroke();
-        }
-      }
+      this.limb(hip, pB, R * 1.33, R * 1.33, R * 0.27, ['#0B0E11', mix(SKIN, '#000000', 0.25)], 1, true);
+      this.limb(sh, [hood[0] - R * 0.05, hood[1]], R * 0.82, R * 0.8, R * 0.17, [mix(KIT, '#000000', 0.3), mix(SKIN, '#000000', 0.25)], -1);
       // wheels
       for (const [wx, wy] of [rear, front]) {
-        ctx.strokeStyle = '#1B1B1F'; ctx.lineWidth = R * 0.16; ctx.beginPath(); ctx.arc(wx, wy, R * 0.92, 0, TAU); ctx.stroke();
-        ctx.strokeStyle = '#C9CCD3'; ctx.lineWidth = R * 0.05; ctx.beginPath(); ctx.arc(wx, wy, R * 0.78, 0, TAU); ctx.stroke();
-        ctx.strokeStyle = 'rgba(220,224,232,0.8)'; ctx.lineWidth = 1;
-        for (let k = 0; k < 6; k++) { const a = this.wheel + (k * Math.PI) / 3; ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + Math.cos(a) * R * 0.76, wy + Math.sin(a) * R * 0.76); ctx.stroke(); }
-        ctx.fillStyle = '#2A2A2E'; ctx.beginPath(); ctx.arc(wx, wy, R * 0.1, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#16191D'; ctx.beginPath(); ctx.arc(wx, wy, R * 0.95, 0, TAU); ctx.arc(wx, wy, R * 0.6, 0, TAU, true); ctx.fill('evenodd');
+        ctx.strokeStyle = '#2C3238'; ctx.lineWidth = R * 0.02; ctx.beginPath(); ctx.arc(wx, wy, R * 0.82, 0, TAU); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = R * 0.06; // rim logo flashes
+        for (let k = 0; k < 2; k++) { const a = this.wheel + k * Math.PI; ctx.beginPath(); ctx.arc(wx, wy, R * 0.75, a, a + 0.5); ctx.stroke(); }
+        ctx.strokeStyle = 'rgba(200,205,212,0.6)'; ctx.lineWidth = 0.8;
+        for (let k = 0; k < 8; k++) { const a = this.wheel * 0.5 + k * Math.PI / 4; ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + Math.cos(a) * R * 0.6, wy + Math.sin(a) * R * 0.6); ctx.stroke(); }
+        ctx.fillStyle = '#9AA1A9'; ctx.beginPath(); ctx.arc(wx, wy, R * 0.07, 0, TAU); ctx.fill();
       }
-      // far-side leg first (behind frame)
-      const ca = this.crank;
-      const crankL = R * 0.5;
-      const pedA = [bb[0] + Math.cos(ca) * crankL, bb[1] + Math.sin(ca) * crankL];
-      const pedB = [bb[0] + Math.cos(ca + Math.PI) * crankL, bb[1] + Math.sin(ca + Math.PI) * crankL];
-      const hip = [seat[0] + R * 0.1, seat[1] - R * 0.15 + bob];
-      this.drawLeg(hip, pedB, R, '#18203E');
       // frame
       ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#D7262E'; ctx.lineWidth = R * 0.17;
-      ctx.beginPath();
-      ctx.moveTo(rear[0], rear[1]); ctx.lineTo(bb[0], bb[1]); ctx.lineTo(headBot[0], headBot[1]); ctx.lineTo(headTop[0], headTop[1]);
-      ctx.lineTo(seat[0] + R * 0.12, seat[1] + R * 0.25); ctx.lineTo(bb[0], bb[1]);
-      ctx.moveTo(seat[0] + R * 0.12, seat[1] + R * 0.25); ctx.lineTo(rear[0], rear[1]);
-      ctx.stroke();
-      ctx.strokeStyle = '#B9BCC4'; ctx.lineWidth = R * 0.12;
-      ctx.beginPath(); ctx.moveTo(headBot[0], headBot[1]); ctx.lineTo(front[0], front[1]); ctx.stroke();
-      // bars + saddle
-      ctx.strokeStyle = '#1B1B1F'; ctx.lineWidth = R * 0.12;
-      ctx.beginPath(); ctx.moveTo(headTop[0], headTop[1]); ctx.lineTo(bar[0], bar[1]); ctx.quadraticCurveTo(bar[0] + R * 0.45, bar[1] + R * 0.05, bar[0] + R * 0.2, bar[1] + R * 0.5); ctx.stroke();
-      ctx.fillStyle = '#1B1B1F'; ctx.beginPath(); ctx.ellipse(seat[0], seat[1] + R * 0.1, R * 0.38, R * 0.1, 0, 0, TAU); ctx.fill();
-      // chainring + crank
-      ctx.strokeStyle = '#8A8D96'; ctx.lineWidth = R * 0.08; ctx.beginPath(); ctx.arc(bb[0], bb[1], R * 0.3, 0, TAU); ctx.stroke();
-      ctx.strokeStyle = '#2A2A2E'; ctx.lineWidth = R * 0.1;
-      ctx.beginPath(); ctx.moveTo(pedB[0], pedB[1]); ctx.lineTo(pedA[0], pedA[1]); ctx.stroke();
-
-      // gyoza body
-      const lean = 0.14 + (this.zone >= 4 ? 0.06 : 0);
-      const cx = seat[0] + R * 0.75, cy = seat[1] - R * 0.5 + bob;
-      const w = R * 2.3, h = R * 1.35;
-      ctx.save();
-      ctx.translate(cx, cy); ctx.rotate(lean);
-      const body = new Path2D();
-      body.moveTo(-w / 2, 0);
-      body.bezierCurveTo(-w * 0.36, -h * 1.28, w * 0.36, -h * 1.28, w / 2, 0);
-      body.quadraticCurveTo(0, h * 0.32, -w / 2, 0);
-      ctx.fillStyle = '#F6E8C8'; ctx.fill(body);
-      ctx.save(); ctx.clip(body);
-      const cg = ctx.createLinearGradient(0, -h * 0.3, 0, h * 0.3);
-      cg.addColorStop(0, 'rgba(201,138,43,0)'); cg.addColorStop(0.45, 'rgba(214,150,60,0.85)'); cg.addColorStop(1, '#A8662A');
-      ctx.fillStyle = cg; ctx.fillRect(-w, -h * 0.3, w * 2, h);
+      ctx.strokeStyle = '#EEF1F3'; ctx.lineWidth = R * 0.13;
+      ctx.beginPath(); ctx.moveTo(rear[0], rear[1]); ctx.lineTo(bb[0], bb[1]); ctx.lineTo(hb[0], hb[1]); ctx.lineTo(ht[0], ht[1]);
+      ctx.lineTo(seat[0] + R * 0.15, seat[1] + R * 0.3); ctx.lineTo(bb[0], bb[1]); ctx.moveTo(seat[0] + R * 0.15, seat[1] + R * 0.3); ctx.lineTo(rear[0], rear[1]); ctx.stroke();
+      ctx.strokeStyle = KIT; ctx.lineWidth = R * 0.05; ctx.beginPath(); ctx.moveTo(bb[0] + (hb[0] - bb[0]) * 0.35, bb[1] + (hb[1] - bb[1]) * 0.35); ctx.lineTo(bb[0] + (hb[0] - bb[0]) * 0.7, bb[1] + (hb[1] - bb[1]) * 0.7); ctx.stroke();
+      ctx.strokeStyle = '#2B3137'; ctx.lineWidth = R * 0.1; ctx.beginPath(); ctx.moveTo(hb[0], hb[1]); ctx.lineTo(front[0], front[1]); ctx.stroke();
+      ctx.strokeStyle = '#16191D'; ctx.lineWidth = R * 0.09;
+      ctx.beginPath(); ctx.moveTo(ht[0], ht[1]); ctx.lineTo(hood[0] - R * 0.15, hood[1] - R * 0.06); ctx.quadraticCurveTo(hood[0] + R * 0.25, hood[1] - R * 0.05, hood[0] + R * 0.1, hood[1] + R * 0.45); ctx.stroke();
+      ctx.fillStyle = '#16191D'; ctx.beginPath(); ctx.ellipse(seat[0], seat[1] + R * 0.12, R * 0.36, R * 0.08, -0.05, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#A7AEB6'; ctx.lineWidth = R * 0.06; ctx.beginPath(); ctx.arc(bb[0], bb[1], R * 0.28, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = '#2B3137'; ctx.lineWidth = R * 0.08; ctx.beginPath(); ctx.moveTo(pB[0], pB[1]); ctx.lineTo(pA[0], pA[1]); ctx.stroke();
+      // near leg
+      this.limb(hip, pA, R * 1.33, R * 1.33, R * 0.29, ['#14181C', SKIN], 1, true);
+      // torso (jersey)
+      ctx.strokeStyle = KIT; ctx.lineWidth = R * 0.62; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(hip[0], hip[1] - R * 0.12); ctx.quadraticCurveTo((hip[0] + sh[0]) / 2, Math.min(hip[1], sh[1]) - R * 0.32, sh[0], sh[1]); ctx.stroke();
+      ctx.strokeStyle = KIT2; ctx.lineWidth = R * 0.14;
+      ctx.beginPath(); ctx.moveTo(hip[0] + R * 0.05, hip[1] + R * 0.05); ctx.quadraticCurveTo((hip[0] + sh[0]) / 2, Math.min(hip[1], sh[1]) - R * 0.05, sh[0] - R * 0.1, sh[1] + R * 0.22); ctx.stroke();
+      // number bib
+      const mx = (hip[0] + sh[0]) / 2 - R * 0.15, my = (hip[1] + sh[1]) / 2 - R * 0.12;
+      ctx.save(); ctx.translate(mx, my); ctx.rotate(Math.atan2(sh[1] - hip[1], sh[0] - hip[0]));
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(-R * 0.3, -R * 0.2, R * 0.6, R * 0.36);
+      ctx.fillStyle = '#14181C'; ctx.font = `800 ${Math.round(R * 0.26)}px "Saira Condensed", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('29', 0, -R * 0.01);
       ctx.restore();
-      ctx.strokeStyle = '#6B4320'; ctx.lineWidth = Math.max(1.5, R * 0.07); ctx.stroke(body);
-      // pleats along the ridge
-      ctx.strokeStyle = '#D9C49B'; ctx.lineWidth = Math.max(1.2, R * 0.06);
-      for (let k = 1; k <= 5; k++) {
-        const tt = k / 6, mt = 1 - tt;
-        const px = mt * mt * mt * (-w / 2) + 3 * mt * mt * tt * (-w * 0.36) + 3 * mt * tt * tt * (w * 0.36) + tt * tt * tt * (w / 2);
-        const py = 3 * mt * mt * tt * (-h * 1.28) + 3 * mt * tt * tt * (-h * 1.28);
-        ctx.beginPath(); ctx.moveTo(px - R * 0.12, py + R * 0.05); ctx.quadraticCurveTo(px, py + R * 0.35, px + R * 0.1, py + R * 0.45); ctx.stroke();
-      }
-      // headband from Z4
-      if (this.zone >= 4) {
-        const hbY = -h * 0.72;
-        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = R * 0.16;
-        ctx.beginPath(); ctx.moveTo(w * 0.02, hbY - R * 0.05); ctx.quadraticCurveTo(w * 0.25, hbY + R * 0.12, w * 0.42, hbY + R * 0.38); ctx.stroke();
-        const fl = Math.sin(this.t * 14) * R * 0.15;
-        ctx.lineWidth = R * 0.1;
-        ctx.beginPath(); ctx.moveTo(w * 0.02, hbY - R * 0.05); ctx.quadraticCurveTo(-w * 0.2, hbY - R * 0.2 + fl, -w * 0.42, hbY + fl * 1.5); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(w * 0.02, hbY - R * 0.02); ctx.quadraticCurveTo(-w * 0.15, hbY + R * 0.1 - fl, -w * 0.36, hbY + R * 0.25 - fl); ctx.stroke();
-        ctx.fillStyle = '#D7262E'; ctx.beginPath(); ctx.arc(w * 0.24, hbY + R * 0.1, R * 0.08, 0, TAU); ctx.fill();
-      }
-      // face
-      this.drawFace(w, h, R, I);
+      // head + helmet + glasses
+      const hd = [sh[0] + R * 0.42, sh[1] - R * 0.34];
+      ctx.fillStyle = SKIN; ctx.beginPath(); ctx.arc(hd[0], hd[1], R * 0.27, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#F4F6F8'; ctx.beginPath();
+      ctx.moveTo(hd[0] - R * 0.42, hd[1] - R * 0.02); ctx.quadraticCurveTo(hd[0] - R * 0.2, hd[1] - R * 0.5, hd[0] + R * 0.25, hd[1] - R * 0.3); ctx.quadraticCurveTo(hd[0] + R * 0.4, hd[1] - R * 0.18, hd[0] + R * 0.3, hd[1] - R * 0.06); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = KIT; ctx.lineWidth = R * 0.05; ctx.beginPath(); ctx.moveTo(hd[0] - R * 0.3, hd[1] - R * 0.22); ctx.quadraticCurveTo(hd[0], hd[1] - R * 0.4, hd[0] + R * 0.2, hd[1] - R * 0.26); ctx.stroke();
+      ctx.fillStyle = '#101418'; ctx.beginPath(); ctx.ellipse(hd[0] + R * 0.2, hd[1] - R * 0.02, R * 0.13, R * 0.06, -0.15, 0, TAU); ctx.fill();
+      // near arm
+      this.limb(sh, hood, R * 0.82, R * 0.8, R * 0.19, [KIT, SKIN], -1);
       ctx.restore();
-
-      // near-side leg and arm (in front)
-      this.drawLeg(hip, pedA, R, '#22305A');
-      const sh = [cx + Math.cos(lean) * w * 0.18 - Math.sin(lean) * (-h * 0.2), cy + Math.sin(lean) * w * 0.18 + Math.cos(lean) * (-h * 0.2)];
-      const hand = [bar[0] + R * 0.12, bar[1] + R * 0.05];
-      ctx.strokeStyle = '#6B4320'; ctx.lineWidth = R * 0.24; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(sh[0], sh[1]); ctx.quadraticCurveTo((sh[0] + hand[0]) / 2, sh[1] + R * 0.35, hand[0], hand[1]); ctx.stroke();
-      ctx.strokeStyle = '#F6E8C8'; ctx.lineWidth = R * 0.15;
-      ctx.beginPath(); ctx.moveTo(sh[0], sh[1]); ctx.quadraticCurveTo((sh[0] + hand[0]) / 2, sh[1] + R * 0.35, hand[0], hand[1]); ctx.stroke();
-
-      // emitters
-      this._emit = { x: cx, y: cy - h * 0.9, R };
+      this._emit = { x: e.rx + hd[0] * Math.cos(-this.ang) - hd[1] * Math.sin(-this.ang), y: cy + hd[0] * Math.sin(-this.ang) + hd[1] * Math.cos(-this.ang), R };
+    }
+    /* two-bone limb; bend=1 knee forward, -1 elbow back/down */
+    limb(a, b, l1, l2, w, cols, bend, leg) {
+      const { ctx } = this;
+      const dx = b[0] - a[0], dy = b[1] - a[1];
+      const d = Math.min(Math.hypot(dx, dy), l1 + l2 - 0.01);
+      const base = Math.atan2(dy, dx), k = Math.acos(clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1));
+      const j1 = [a[0] + Math.cos(base - k) * l1, a[1] + Math.sin(base - k) * l1], j2 = [a[0] + Math.cos(base + k) * l1, a[1] + Math.sin(base + k) * l1];
+      const j = bend > 0 ? (j1[0] > j2[0] ? j1 : j2) : (j1[1] > j2[1] ? j1 : j2);
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = cols[0]; ctx.lineWidth = w;
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]);
+      if (leg) { const m = [a[0] + (j[0] - a[0]) * 0.75, a[1] + (j[1] - a[1]) * 0.75]; ctx.lineTo(m[0], m[1]); ctx.stroke(); ctx.strokeStyle = cols[1]; ctx.lineWidth = w * 0.9; ctx.beginPath(); ctx.moveTo(m[0], m[1]); }
+      else { const m = [a[0] + (j[0] - a[0]) * 0.45, a[1] + (j[1] - a[1]) * 0.45]; ctx.lineTo(m[0], m[1]); ctx.stroke(); ctx.strokeStyle = cols[1]; ctx.lineWidth = w * 0.8; ctx.beginPath(); ctx.moveTo(m[0], m[1]); }
+      ctx.lineTo(j[0], j[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      if (leg) { // sock + shoe
+        ctx.strokeStyle = '#F4F6F8'; ctx.lineWidth = w * 0.85; ctx.beginPath(); ctx.moveTo(b[0] + (j[0] - b[0]) * 0.22, b[1] + (j[1] - b[1]) * 0.22); ctx.lineTo(b[0] + (j[0] - b[0]) * 0.08, b[1] + (j[1] - b[1]) * 0.08); ctx.stroke();
+        ctx.fillStyle = '#14181C'; ctx.beginPath(); ctx.ellipse(b[0] + w * 0.35, b[1] + w * 0.1, w * 0.85, w * 0.36, 0.08, 0, TAU); ctx.fill();
+      }
     }
 
-    drawLeg(hip, ped, R, color) {
-      const { ctx } = this;
-      const L1 = R * 1.3, L2 = R * 1.3;
-      const dx = ped[0] - hip[0], dy = ped[1] - hip[1];
-      const d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.01);
-      const base = Math.atan2(dy, dx);
-      const a = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1));
-      const k1 = [hip[0] + Math.cos(base - a) * L1, hip[1] + Math.sin(base - a) * L1];
-      const k2 = [hip[0] + Math.cos(base + a) * L1, hip[1] + Math.sin(base + a) * L1];
-      const knee = k1[0] > k2[0] ? k1 : k2;
-      ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = R * 0.26;
-      ctx.beginPath(); ctx.moveTo(hip[0], hip[1]); ctx.lineTo(knee[0], knee[1]); ctx.lineTo(ped[0], ped[1]); ctx.stroke();
-      ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(ped[0], ped[1] - R * 0.05, R * 0.13, 0, TAU); ctx.fill();
-      ctx.fillStyle = '#D7262E'; ctx.beginPath(); ctx.ellipse(ped[0] + R * 0.08, ped[1] + R * 0.04, R * 0.24, R * 0.12, 0, 0, TAU); ctx.fill();
-    }
-
-    drawFace(w, h, R, I) {
-      const { ctx } = this;
-      const ex1 = w * 0.18, ex2 = w * 0.34, ey = -h * 0.42;
-      ctx.fillStyle = `rgba(255,120,130,${0.35 + clamp(I - 0.5, 0, 0.8) * 0.6})`;
-      ctx.beginPath(); ctx.ellipse(w * 0.1, -h * 0.22, R * 0.16, R * 0.1, 0, 0, TAU); ctx.ellipse(w * 0.41, -h * 0.2, R * 0.12, R * 0.08, 0, 0, TAU); ctx.fill();
-      ctx.strokeStyle = '#2B1C10'; ctx.fillStyle = '#2B1C10'; ctx.lineWidth = Math.max(1.6, R * 0.08); ctx.lineCap = 'round';
-      if (I < 0.6) { // happy ^ ^
-        for (const ex of [ex1, ex2]) { ctx.beginPath(); ctx.arc(ex, ey + R * 0.06, R * 0.11, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
-      } else if (I < 1.05) { // dot eyes
-        for (const ex of [ex1, ex2]) { ctx.beginPath(); ctx.ellipse(ex, ey, R * 0.07, R * 0.11, 0, 0, TAU); ctx.fill(); }
-        if (I >= 0.9) { ctx.beginPath(); ctx.moveTo(ex1 - R * 0.12, ey - R * 0.22); ctx.lineTo(ex1 + R * 0.08, ey - R * 0.15); ctx.moveTo(ex2 - R * 0.06, ey - R * 0.15); ctx.lineTo(ex2 + R * 0.12, ey - R * 0.22); ctx.stroke(); }
-      } else if (I < 1.2) { // > <
-        ctx.beginPath(); ctx.moveTo(ex1 - R * 0.09, ey - R * 0.08); ctx.lineTo(ex1 + R * 0.06, ey); ctx.lineTo(ex1 - R * 0.09, ey + R * 0.08);
-        ctx.moveTo(ex2 + R * 0.09, ey - R * 0.08); ctx.lineTo(ex2 - R * 0.06, ey); ctx.lineTo(ex2 + R * 0.09, ey + R * 0.08); ctx.stroke();
-      } else { // fire eyes
-        for (const ex of [ex1, ex2]) {
-          ctx.fillStyle = '#FF7A1A'; ctx.beginPath(); ctx.moveTo(ex - R * 0.09, ey + R * 0.08);
-          ctx.quadraticCurveTo(ex - R * 0.1, ey - R * 0.12, ex, ey - R * 0.2 - Math.sin(this.t * 20) * R * 0.04);
-          ctx.quadraticCurveTo(ex + R * 0.1, ey - R * 0.12, ex + R * 0.09, ey + R * 0.08); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = '#FFE36B'; ctx.beginPath(); ctx.arc(ex, ey + R * 0.02, R * 0.045, 0, TAU); ctx.fill();
+    drawFx(e, dt) {
+      const { ctx } = this; const { W, H } = e;
+      // wind streaks from threshold up
+      const wind = clamp((this.zone - 3) / 3, 0, 1);
+      if (wind > 0 && this.cadence > 10) {
+        ctx.strokeStyle = `rgba(255,255,255,${0.25 + wind * 0.35})`; ctx.lineWidth = 1.5;
+        for (let k = 0; k < 4 + wind * 10; k++) {
+          const y = H * (0.25 + rnd(k, 3) * 0.55), len = 40 + rnd(k, Math.floor(this.t * 3)) * 120;
+          const x = W - ((this.t * (600 + wind * 600) + k * 157) % (W + len * 2));
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + len, y - len * Math.tan(this.ang) * 0.3); ctx.stroke();
         }
       }
-      ctx.fillStyle = '#2B1C10';
-      const mx = w * 0.28, my = -h * 0.2;
-      if (I < 0.9) { ctx.beginPath(); ctx.arc(mx, my - R * 0.04, R * 0.1, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke(); }
-      else { const o = R * (0.06 + 0.05 * Math.abs(Math.sin(this.t * 6))); ctx.beginPath(); ctx.ellipse(mx, my, R * 0.08, o, 0, 0, TAU); ctx.fill(); }
-    }
-
-    drawParticles(e, dt) {
-      const { ctx } = this;
-      const em = this._emit;
-      const I = this.intensity;
-      if (em && this.cadence > 10) {
-        if (Math.random() < clamp(I - 0.65, 0, 1.2) * dt * 10) {
-          this.parts.push({ k: 'sweat', x: em.x + (Math.random() - 0.3) * em.R, y: em.y + em.R * 0.6, vx: -20 - Math.random() * 30, vy: -40 - Math.random() * 30, life: 1 });
-        }
-        if (I > 0.85 && Math.random() < dt * 6) {
-          this.parts.push({ k: 'steam', x: em.x + (Math.random() - 0.5) * em.R * 1.6, y: em.y + em.R * 0.2, vx: -8, vy: -26, life: 1.4, ph: Math.random() * 6 });
-        }
+      // falling leaves (autumn/spring) when pushing hard or on the plateau
+      const key = STAGE_KEYS[this.stage];
+      const leafy = (this.S.key === 'autumn' || this.S.key === 'spring') && (this.zone >= 5 || key === 'plateau' || key === 'hairpin');
+      if (leafy && Math.random() < dt * (this.zone >= 5 ? 14 : 3)) {
+        this.parts.push({ k: 'leaf', x: W + 10, y: H * Math.random() * 0.7, vx: -(140 + Math.random() * 160) * (0.6 + wind), vy: 30 + Math.random() * 40, r: Math.random() * TAU, life: 6, c: this.S.key === 'spring' ? '#F6C1CF' : this.S.leaf[Math.floor(Math.random() * 3)] });
       }
-      this.parts = this.parts.filter((p) => (p.life -= dt) > 0);
+      if (this._emit && this.cadence > 10 && Math.random() < clamp(this.intensity - 0.8, 0, 1) * dt * 8) {
+        this.parts.push({ k: 'sweat', x: this._emit.x, y: this._emit.y, vx: -30 - Math.random() * 30, vy: -20, life: 0.9 });
+      }
+      this.parts = this.parts.filter((p) => (p.life -= dt) > 0 && p.x > -20);
       for (const p of this.parts) {
         p.x += p.vx * dt; p.y += p.vy * dt;
-        if (p.k === 'sweat') {
-          p.vy += 160 * dt;
-          ctx.fillStyle = `rgba(120,200,255,${clamp(p.life, 0, 1)})`;
-          ctx.beginPath(); ctx.moveTo(p.x, p.y - 4); ctx.quadraticCurveTo(p.x + 3, p.y + 1, p.x, p.y + 2); ctx.quadraticCurveTo(p.x - 3, p.y + 1, p.x, p.y - 4); ctx.fill();
+        if (p.k === 'leaf') {
+          p.r += dt * 4; p.vy = 30 + Math.sin(this.t * 3 + p.r) * 40;
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.beginPath(); ctx.ellipse(0, 0, 5, 2.5, 0, 0, TAU); ctx.fill(); ctx.restore();
         } else {
-          ctx.strokeStyle = `rgba(255,255,255,${clamp(p.life / 1.4, 0, 1) * 0.7})`; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(p.x, p.y);
-          for (let k = 1; k <= 4; k++) ctx.lineTo(p.x + Math.sin(p.ph + k + this.t * 4) * 3, p.y - k * 4);
-          ctx.stroke();
+          p.vy += 200 * dt; ctx.fillStyle = `rgba(170,215,255,${clamp(p.life, 0, 1)})`; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, TAU); ctx.fill();
         }
       }
     }
 
     drawPops(e) {
       const { ctx } = this;
-      this.pops = this.pops.filter((p) => this.t - p.t0 < 3.2);
+      this.pops = this.pops.filter((p) => this.t - p.t0 < 3.4);
       for (const p of this.pops) {
-        const k = (this.t - p.t0) / 3.2;
-        const bx = e.W * (this.compact ? 0.5 : 0.34) + e.R * 0.6;
-        const y = e.gy - e.R * 5.3 - k * e.R * 1.6;
-        const s = Math.min(1, k * 6) * (1 - Math.max(0, k - 0.8) * 5);
-        ctx.save();
-        ctx.globalAlpha = clamp(s, 0, 1);
-        ctx.font = `${Math.round(e.R * 1.6 * (0.6 + 0.4 * Math.min(1, k * 6)))}px system-ui, "Apple Color Emoji", sans-serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(p.e, bx, y);
-        ctx.font = `bold ${Math.round(Math.max(13, e.R * 0.55))}px "Zen Kaku Gothic New", system-ui, sans-serif`;
-        const tw = ctx.measureText(p.s).width + 18;
-        ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#22305A'; ctx.lineWidth = 2;
-        const by = y - e.R * 1.25;
-        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx - tw / 2, by - 13, tw, 26, 13) : ctx.rect(bx - tw / 2, by - 13, tw, 26); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#22305A'; ctx.fillText(p.s, bx, by + 1);
+        const k = (this.t - p.t0) / 3.4;
+        const a = clamp(Math.min(k * 8, (1 - k) * 5), 0, 1);
+        const x = e.rx + e.R * 0.6, y = e.roadY(e.rx) - e.R * (4.6 + k * 1.2);
+        ctx.save(); ctx.globalAlpha = a;
+        const fs = Math.round(clamp(e.R * 0.5, 13, 22));
+        ctx.font = `700 ${fs}px "Zen Kaku Gothic New", system-ui, sans-serif`;
+        const tw = ctx.measureText(p.s).width; const ew = fs * 1.6; const w = tw + ew + 22, h = fs * 2;
+        ctx.fillStyle = 'rgba(18,32,42,0.88)'; ctx.strokeStyle = '#FFC31F'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill(); ctx.stroke();
+        ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+        ctx.font = `${Math.round(fs * 1.25)}px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`; ctx.fillText(p.e, x - w / 2 + 10, y + 1);
+        ctx.fillStyle = '#FFFFFF'; ctx.font = `700 ${fs}px "Zen Kaku Gothic New", system-ui, sans-serif`; ctx.fillText(p.s, x - w / 2 + 12 + ew, y + 1);
         ctx.restore();
       }
     }
   }
-
-  return { World, THEMES, skyAt, nightness };
+  return { World, light, season };
 })();
 
 ;
@@ -1804,10 +1841,11 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
   const fmtDate = (ms) => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
 
   /* ---------- settings ---------- */
-  const DEFAULTS = { ftp: 200, weight: 65, bike: 9, maxHR: 185, autoPause: true, sound: true, wake: true, sim: false };
+  const DEFAULTS = { ftp: 200, weight: 65, bike: 9, maxHR: 185, autoPause: true, sound: true, wake: true, sim: false, bib: 0 };
   let cfg = { ...DEFAULTS };
   try { cfg = { ...DEFAULTS, ...JSON.parse(Store.get('rt.cfg') || '{}') }; } catch (e) { /* defaults */ }
   const saveCfg = () => Store.set('rt.cfg', JSON.stringify(cfg));
+  if (!cfg.bib) { cfg.bib = 100 + Math.floor(Math.random() * 900); saveCfg(); }
   const btOK = BLE.available();
   if (!btOK) cfg.sim = true;
 
@@ -1942,31 +1980,29 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     const anyOn = ['trainer', 'hr'].some((k) => dev[k] && dev[k].state === 'connected');
     $('#home-live').hidden = !anyOn;
     $('#bt-note').textContent = !btOK
-      ? 'このブラウザはBluetoothに対応していないので、シミュレーターで動いています。Saris H3につなぐときは、iPhoneのBluefyでこのページを開いてください。'
+      ? 'このブラウザはBluetoothに対応していないので、シミュレーターで動いています。実機につなぐときは、iPhoneはBluefy、パソコンはChromeかEdgeでこのページを開いてください。'
       : cfg.sim
       ? 'シミュレーターで動いています。実機につなぐときは設定でオフにしてください。'
-      : 'Saris H3とWahooの心拍計は、電源を入れてから「接続」を押してください。';
+      : 'トレーナーと心拍計の電源を入れてから「接続」を押してください。ほかのアプリやスマホとつながっていると見つからないことがあります。';
     if (ride && ride.active) renderControls();
   }
 
   /* ---------- scenes ---------- */
   const homeScene = new Scene.World($('#home-scene'), { compact: true });
-  let worldName = '公園';
   const rideScene = new Scene.World($('#ride-scene'), {
-    onTheme: (th) => {
-      worldName = th.name;
-      $('#r-world span').textContent = th.name;
-      $('#r-world i').style.background = Workouts.ZONE_COLORS[rideScene.zone];
-      toast(`${th.name}に入った`, 1600);
+    onStage: (st) => {
+      if (!ride || !ride.active) return;
+      const i = Course.STAGES.indexOf(st);
+      toast(`区間 ${i + 1}/6　${st.name}`, 1800);
     },
   });
   function dayFromClock(d = new Date()) {
     const h = d.getHours() + d.getMinutes() / 60;
-    const K = [[0, 0.88], [4.5, 0.97], [5.5, 0.02], [7, 0.1], [12, 0.45], [17, 0.6], [18.3, 0.68], [19.3, 0.76], [20.3, 0.82], [24, 0.88]];
+    const K = [[0, 0.88], [4.5, 0.97], [5.5, 0.02], [7, 0.1], [12, 0.45], [17, 0.6], [18.3, 0.67], [19.3, 0.75], [20.3, 0.82], [24, 0.88]];
     for (let i = 0; i < K.length - 1; i++) {
       if (h >= K[i][0] && h <= K[i + 1][0]) {
         const k = (h - K[i][0]) / (K[i + 1][0] - K[i][0]);
-        let a = K[i][1], b = K[i + 1][1]; if (b < a) b += 1;
+        const a = K[i][1]; let b = K[i + 1][1]; if (b < a) b += 1;
         return (a + (b - a) * k) % 1;
       }
     }
@@ -2010,14 +2046,15 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     const steps = workout ? Workouts.flatten(workout.blocks) : null;
     ride = {
       id: `r${Date.now()}`, active: true, workout, steps, total: steps ? steps.reduce((a, s) => a + s.d, 0) : 0,
-      mode: workout ? 'workout' : 'free', freeMode: 'sim', grade: 0, ergW: Math.round(cfg.ftp * 0.6 / 5) * 5,
+      mode: workout ? 'workout' : 'free', freeMode: 'course', grade: 3, ergW: Math.round(cfg.ftp * 0.6 / 5) * 5, diff: 100,
       started: false, paused: false, autoPaused: false, zero: 0, t: 0, wt: 0, offset: 0, ergOn: true, done: false,
-      sm: { ts: [], p: [], hr: [], cad: [], spd: [], dist: [], tgt: [] }, dist: 0, vs: 0, kj: 0, ms: 0, target: null,
-      lastStep: -1, startWall: null, name: workout ? workout.name : 'フリーライド', created: Date.now(),
+      sm: { ts: [], p: [], hr: [], cad: [], spd: [], dist: [], tgt: [] }, dist: 0, cdist: 0, vs: 0, kj: 0, target: null,
+      foodId: null, lastStep: -1, startWall: null, name: workout ? workout.name : 'ヒルクライム', created: Date.now(),
+      gate: false, laps: [], lapStartT: 0, maxP: 0,
     };
-    rideScene.set({ day: 0.06, speed: 0, cadence: 0, intensity: 0.3 });
-    rideScene.jumpZone(1); zoneState.ride = 1;
-    worldName = '公園'; $('#r-world span').textContent = worldName; $('#r-world i').style.background = Workouts.ZONE_COLORS[1];
+    rideScene.restart();
+    rideScene.set({ day: 0.05, speed: 0, cadence: 0, intensity: 0.3, zone: 1, p: 0, grade: Course.gradeAt(0) });
+    zoneState.ride = 1;
     $('#r-start').hidden = false; $('#r-paused').hidden = true;
     initAudio();
     keepAwake(true);
@@ -2028,6 +2065,11 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     if (!dev.trainer || dev.trainer.state !== 'connected') toast('トレーナーが未接続です。ホームで接続できます', 3200);
   }
 
+  const courseP = () => {
+    if (!ride) return 0;
+    if (ride.mode === 'workout') return ride.total ? Math.min(1, ride.wt / ride.total) : 0;
+    return (ride.cdist % Course.L) / Course.L;
+  };
   function currentStep() { return ride && ride.steps && !ride.done ? Workouts.at(ride.steps, ride.wt) : null; }
   function applyControl() {
     const t = dev.trainer;
@@ -2040,8 +2082,12 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       const w = Math.round(cfg.ftp * (a.pct / 100) * (1 + ride.offset / 100));
       ride.target = w;
       if (t) t.setErg(w);
+    } else if (ride.mode === 'workout') {
+      if (t) t.setSim(0);
     } else if (ride.freeMode === 'erg') {
       ride.target = ride.ergW; if (t) t.setErg(ride.ergW);
+    } else if (ride.freeMode === 'course') {
+      if (t) t.setSim(Math.round(Course.gradeAt(courseP()) * ride.diff) / 100);
     } else if (t) t.setSim(ride.grade);
   }
 
@@ -2062,44 +2108,60 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       ride.zero = 0;
       if (ride.autoPaused) { ride.autoPaused = false; $('#r-paused').hidden = true; }
     }
-    const grade = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : 0;
+    // virtual speed: real climbing physics on the course, flat road otherwise
+    const grade = ride.mode === 'free' ? (ride.freeMode === 'course' ? Course.gradeAt(courseP()) : ride.freeMode === 'sim' ? ride.grade : 0) : 0;
     const vt = Metrics.speedFromPower(live.power, cfg.weight + cfg.bike, grade);
     ride.vs += (vt - ride.vs) * 0.3;
     if (live.power === 0) ride.vs *= 0.85;
     ride.dist += ride.vs;
+    if (ride.mode === 'free') {
+      const lapBefore = Math.floor(ride.cdist / Course.L);
+      ride.cdist += ride.vs;
+      const remain = Course.L - (ride.cdist % Course.L);
+      if (!ride.gate && remain < 120) { ride.gate = true; rideScene.finishIn = remain; }
+      if (Math.floor(ride.cdist / Course.L) > lapBefore) {
+        const lt = ride.t - ride.lapStartT; ride.laps.push(lt); ride.lapStartT = ride.t; ride.gate = false;
+        rideScene.pop('🏁', `ゴール！ ${fmtClock(lt)}`); rideScene.startX = rideScene.x + rideScene.H * 0.2;
+        beep(784, 0.15); setTimeout(() => beep(1046, 0.3), 180);
+        toast(`${ride.laps.length}本目 ゴール ${fmtClock(lt)}　続けてもう1本！`, 4000);
+      }
+    }
     const s = ride.sm;
     s.ts.push(now); s.p.push(Math.round(live.power)); s.hr.push(live.hr || null); s.cad.push(Math.round(live.cadence));
     s.spd.push(Math.round(ride.vs * 36) / 10); s.dist.push(Math.round(ride.dist * 10) / 10); s.tgt.push(ride.target);
     ride.t++;
     ride.kj += live.power / 1000;
-    const M = Workouts.MILESTONES;
-    while (ride.ms < M.length && ride.kj >= M[ride.ms].k) {
-      rideScene.pop(M[ride.ms].e, M[ride.ms].t);
-      beep(1318, 0.08, 0.15); setTimeout(() => beep(1568, 0.12, 0.15), 110);
-      ride.ms++;
+    const lv = Workouts.level(Math.round(ride.kj));
+    if (lv && lv.id !== ride.foodId) {
+      ride.foodId = lv.id;
+      rideScene.pop(lv.f.e, `${Workouts.label(lv.f, lv.n)}ぶん`);
+      if (ride.kj > 40) { beep(1318, 0.08, 0.15); setTimeout(() => beep(1568, 0.12, 0.15), 110); }
     }
     if (ride.mode === 'workout' && !ride.done) {
       ride.wt++;
+      const left = ride.total - ride.wt;
+      if (!ride.gate && left <= 15 && left > 0) { ride.gate = true; rideScene.finishIn = left * Math.max(rideScene.speed / 3.6, 2); }
       const a = currentStep();
       if (!a) {
-        ride.done = true;
-        ride.target = null;
+        ride.done = true; ride.target = null; ride.laps.push(ride.t);
         if (dev.trainer) dev.trainer.setSim(0);
+        rideScene.pop('🏁', 'FINISH!');
         beep(784, 0.15); setTimeout(() => beep(1046, 0.3), 180);
-        modal('ワークアウト完了！', '<p>おつかれさまでした。このまま自由に走って、好きなところで「終了」を押してください。</p>', [{ label: 'OK', value: 0, cls: 'primary' }]);
+        modal('ゴール！', '<p>ワークアウト完走です。このまま自由に走って、好きなところで「終了」を押してください。</p>', [{ label: 'OK', value: 0, cls: 'primary' }]);
         renderControls();
       } else {
         if (a.i !== ride.lastStep) { if (ride.lastStep >= 0) beep(988, 0.25); ride.lastStep = a.i; }
         else if (a.remain <= 3 && a.remain > 0) beep(660, 0.08, 0.18);
       }
     }
+    ride.maxP = Math.max(ride.maxP, ride.mode === 'workout' ? courseP() : ride.laps.length ? 1 : courseP());
     applyControl();
     if (ride.t % 30 === 0) autosave();
   }
 
   function autosave() {
     try {
-      Store.set('rt.inprogress', JSON.stringify({ id: ride.id, name: ride.name, workoutId: ride.workout && ride.workout.id, start: ride.startWall || ride.created, sm: ride.sm, ftp: cfg.ftp }));
+      Store.set('rt.inprogress', JSON.stringify({ id: ride.id, name: ride.name, workoutId: ride.workout && ride.workout.id, start: ride.startWall || ride.created, sm: ride.sm, ftp: cfg.ftp, maxP: ride.maxP, laps: ride.laps, mode: ride.mode }));
     } catch (e) { /* storage full */ }
   }
 
@@ -2125,27 +2187,36 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     if (z < cur) return Math.min(cur, Workouts.zoneOf(pct + 3));
     return z;
   }
+  let homeP = 0.02;
   function updateScenes() {
     const pedaling = live.power > 0 || live.cadence > 5;
     const pct = live.p3 / cfg.ftp;
     const p5 = live.p5.reduce((a, b) => a + b, 0) / Math.max(1, live.p5.length);
     if (!$('#v-home').hidden) {
-      const spd = pedaling ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike) * 3.6 : 16;
-      homeScene.set({ speed: spd, cadence: pedaling ? live.cadence : 70, intensity: pedaling ? pct : 0.4, day: dayFromClock() });
-      zoneState.home = pedaling ? hystZone((p5 / cfg.ftp) * 100, zoneState.home) : 1;
-      homeScene.setZone(zoneState.home);
+      homeP = (homeP + 0.0025) % 1; // the home window slowly rides the whole course
+      const g = Course.gradeAt(homeP);
+      const spd = pedaling ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike, g) * 3.6 : 15;
+      zoneState.home = pedaling ? hystZone((p5 / cfg.ftp) * 100, zoneState.home) : 2;
+      homeScene.set({ speed: spd, cadence: pedaling ? live.cadence : 82, intensity: pedaling ? pct : 0.7, day: dayFromClock(), p: homeP, grade: g, zone: zoneState.home, remainKm: null });
       const d = homeScene.day;
-      $('#home-note').textContent = d > 0.74 || d < 0.03 ? 'こんばんは。夜のひと漕ぎ、いきますか' : d < 0.2 ? 'おはようございます' : '';
+      $('#home-note').textContent = d > 0.74 || d < 0.03 ? '夜練、いきますか' : d < 0.2 ? 'おはようございます' : '';
     }
     if (ride && ride.active) {
+      const desk = window.matchMedia('(min-width: 1000px) and (min-height: 560px)').matches;
+      rideScene.inset = desk ? $('#v-ride .hud').offsetHeight + 34 : 0;
       const moving = ride.started && !ride.paused && !ride.autoPaused;
+      const p = courseP();
+      const g = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : Course.gradeAt(p);
+      if (moving && p5 > 0) zoneState.ride = hystZone((p5 / cfg.ftp) * 100, zoneState.ride);
+      const remainKm = ride.mode === 'workout' ? (ride.done ? 0 : (1 - p) * Course.L / 1000) : (Course.L - (ride.cdist % Course.L)) / 1000;
+      // scenery speed: actual virtual speed, but never so slow that a flat-road workout looks frozen
+      const vis = ride.mode === 'workout' ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike, g) * 3.6 : ride.vs * 3.6;
       rideScene.set({
-        speed: moving ? ride.vs * 3.6 : rideScene.speed * 0.8,
+        speed: moving ? vis : rideScene.speed * 0.8,
         cadence: moving ? live.cadence : 0,
-        intensity: pct,
-        day: 0.06 + ride.t / 3600,
+        intensity: pct, zone: zoneState.ride, p, grade: g, remainKm,
+        day: 0.05 + ride.t / 5400,
       });
-      if (moving && p5 > 0) { zoneState.ride = hystZone((p5 / cfg.ftp) * 100, zoneState.ride); rideScene.setZone(zoneState.ride); }
     }
   }
 
@@ -2162,7 +2233,24 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     $('[data-r=power]').textContent = p;
     $('[data-r=hr]').textContent = live.hr || '--';
     $('[data-r=cadence]').textContent = Math.round(live.cadence);
-    $('#m-power').style.borderLeftColor = Workouts.ZONE_COLORS[Workouts.zoneOf((live.p3 / cfg.ftp) * 100)];
+    $('#m-power').style.setProperty('--zc', Workouts.ZONE_COLORS[Workouts.zoneOf((live.p3 / cfg.ftp) * 100)]);
+  }
+  function drawCourse() {
+    const { ctx, W, H } = prepCanvas($('#r-course'));
+    ctx.clearRect(0, 0, W, H);
+    const E = Course.elev, N = E.length - 1, top = Course.total;
+    const X = (k) => (k / N) * W, Y = (h) => H - 3 - (h / top) * (H - 8);
+    Course.STAGES.forEach((s, i) => {
+      const a = Math.round(s.p * N), b = Math.round((Course.STAGES[i + 1] ? Course.STAGES[i + 1].p : 1) * N);
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.1)';
+      ctx.beginPath(); ctx.moveTo(X(a), H); for (let k = a; k <= b; k++) ctx.lineTo(X(k), Y(E[k])); ctx.lineTo(X(b), H); ctx.closePath(); ctx.fill();
+    });
+    const p = courseP(), kp = Math.round(p * N);
+    ctx.fillStyle = 'rgba(255,195,31,.45)';
+    ctx.beginPath(); ctx.moveTo(0, H); for (let k = 0; k <= kp; k++) ctx.lineTo(X(k), Y(E[k])); ctx.lineTo(X(kp), H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.beginPath(); for (let k = 0; k <= N; k += 3) { if (k) ctx.lineTo(X(k), Y(E[k])); else ctx.moveTo(X(k), Y(E[k])); } ctx.stroke();
+    ctx.fillStyle = '#FFC31F'; ctx.beginPath(); ctx.arc(X(kp), Y(E[kp]), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#12202A'; ctx.lineWidth = 1.5; ctx.stroke();
   }
   function renderRide() {
     if (!ride) return;
@@ -2170,7 +2258,19 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     $('#r-clock').textContent = fmtClock(ride.t);
     $('[data-r=speed]').textContent = (ride.vs * 3.6).toFixed(1);
     $('[data-r=dist]').textContent = (ride.dist / 1000).toFixed(2);
-    $('#r-target').innerHTML = ride.target != null ? `目標<b>${ride.target}</b>W` : (ride.mode === 'free' && ride.freeMode === 'sim' ? `勾配<b>${ride.grade.toFixed(1)}</b>%` : '');
+    const p = courseP();
+    const st = Course.STAGES[Course.stageAt(p)];
+    $('#r-stage').textContent = `${Course.stageAt(p) + 1}/6　${st.name}`;
+    if (ride.mode === 'workout') $('#r-remain').textContent = ride.done ? 'ゴール' : `ゴールまで ${fmtClock(ride.total - ride.wt)}`;
+    else $('#r-remain').textContent = `ゴールまで ${((Course.L - (ride.cdist % Course.L)) / 1000).toFixed(1)} km`;
+    $('#r-elev').textContent = `標高 +${Math.round(Course.elevAt(p))} m${ride.laps.length && ride.mode === 'free' ? `　${ride.laps.length + 1}本目` : ''}`;
+    const g = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : Course.gradeAt(p);
+    $('#r-grade').textContent = `勾配 ${g.toFixed(1)}%`;
+    drawCourse();
+    const tg = $('#r-target');
+    if (ride.target != null) tg.innerHTML = `目標<b>${ride.target}</b>W`;
+    else if (ride.mode === 'free' && ride.freeMode !== 'erg') tg.innerHTML = `勾配<b>${(ride.freeMode === 'course' ? (g * ride.diff) / 100 : ride.grade).toFixed(1)}</b>%`;
+    else tg.innerHTML = '';
     // step info
     const si = $('#r-step');
     if (ride.mode === 'workout' && !ride.done) {
@@ -2181,68 +2281,83 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
         si.innerHTML = `<span>このステップ ${esc(pctTxt)}　残り <b>${fmtClock(a.remain)}</b></span><span>${nx ? `次 ${nx.free ? '自由走' : `${Math.round(nx.p0)}%`}（${fmtMS(nx.d)}）` : '最後のステップ'}</span>`;
       }
     } else if (ride.mode === 'workout') {
-      si.innerHTML = '<span>ワークアウト完了。自由に走れます</span><span></span>';
+      si.innerHTML = '<span>ワークアウト完走。自由に走れます</span><span></span>';
     } else {
-      si.innerHTML = `<span>フリーライド　${ride.freeMode === 'sim' ? '勾配モード' : 'ワット固定モード'}</span><span>${worldName}</span>`;
+      const label = { course: 'コースの勾配に合わせて負荷が変わります', sim: '勾配を自分で設定', erg: 'ワット固定' }[ride.freeMode];
+      si.innerHTML = `<span>ヒルクライム　${label}</span><span>${ride.laps.length ? `ベスト ${fmtClock(Math.min(...ride.laps))}` : ''}</span>`;
     }
     // food
     const kcal = Math.round(ride.kj);
-    $('#r-gyoza').textContent = `×${Math.floor(kcal / Workouts.GYOZA)}`;
-    $('#r-kcal').textContent = `${kcal} kcal`;
-    const nm = Workouts.nextMilestone(kcal);
-    const prevK = [...Workouts.MILESTONES].reverse().find((m) => m.k <= kcal);
-    if (nm) {
-      const from = prevK ? prevK.k : 0;
-      $('#r-foodbar').style.width = `${clamp(((kcal - from) / (nm.k - from)) * 100, 0, 100)}%`;
-      $('#r-foodnext').textContent = `あと${nm.k - kcal}kcalで ${nm.e} ${nm.t.replace('ぶん', '')}`;
-    } else { $('#r-foodbar').style.width = '100%'; $('#r-foodnext').textContent = '満腹です'; }
+    const lv = Workouts.level(kcal);
+    $('#r-food-e').textContent = lv ? lv.f.e : '🔥';
+    $('#r-food-t').textContent = lv ? `${Workouts.label(lv.f, lv.n)}ぶん` : 'まだこれから';
+    $('#r-kcal').textContent = `${kcal} kcal 燃焼`;
+    const nk = Workouts.nextLevelK(kcal), pk = lv ? (kcal < 1000 ? lv.f.k : Math.floor(kcal / 500) * 500) : 0;
+    $('#r-foodbar').style.width = `${clamp(((kcal - pk) / Math.max(1, nk - pk)) * 100, 0, 100)}%`;
     drawStrip();
   }
 
   function renderControls() {
     if (!ride) return;
     const c = $('#r-controls');
-    const btn = (label, act, cls = '') => `<button data-ract="${act}" class="${cls}">${label}</button>`;
-    let r1 = btn(ride.paused ? '再開' : '一時停止', 'pause', ride.paused ? 'on' : '');
+    const btn = (label, act, cls = '', key = '') => `<button data-ract="${act}" class="${cls}"${key ? ` title="${key}"` : ''}>${label}</button>`;
+    let r1 = btn(ride.paused ? '再開' : '一時停止', 'pause', ride.paused ? 'on' : '', 'スペース');
     let r2 = '';
     if (ride.mode === 'workout' && !ride.done) {
-      r1 += btn('スキップ', 'skip') + btn('ERG', 'erg', ride.ergOn ? 'on' : '');
-      r2 = btn('−5%', 'minus') + `<div class="val"><small>強度</small>${ride.offset >= 0 ? '+' : ''}${ride.offset}%</div>` + btn('+5%', 'plus');
+      r1 += btn('スキップ', 'skip', '', 'S') + btn('ERG', 'erg', ride.ergOn ? 'on' : '', 'E');
+      r2 = btn('−5%', 'minus', '', '←') + `<div class="val"><small>強度</small>${ride.offset >= 0 ? '+' : ''}${ride.offset}%</div>` + btn('+5%', 'plus', '', '→');
+    } else if (ride.mode === 'workout') {
+      r2 = '<div class="val"><small>完走</small>FREE</div>';
     } else {
-      r1 += btn(ride.freeMode === 'sim' ? 'ワット固定へ' : '勾配モードへ', 'mode');
-      r2 = ride.freeMode === 'sim'
-        ? btn('−0.5%', 'minus') + `<div class="val"><small>勾配</small>${ride.grade.toFixed(1)}%</div>` + btn('+0.5%', 'plus')
-        : btn('−10W', 'minus') + `<div class="val"><small>目標</small>${ride.ergW}W</div>` + btn('+10W', 'plus');
+      r1 += btn({ course: 'コース', sim: '勾配', erg: 'ワット' }[ride.freeMode] + 'モード', 'mode', '', 'M');
+      if (ride.freeMode === 'course') r2 = btn('−10%', 'minus', '', '←') + `<div class="val"><small>坂の強さ</small>${ride.diff}%</div>` + btn('+10%', 'plus', '', '→');
+      else if (ride.freeMode === 'sim') r2 = btn('−0.5%', 'minus', '', '←') + `<div class="val"><small>勾配</small>${ride.grade.toFixed(1)}%</div>` + btn('+0.5%', 'plus', '', '→');
+      else r2 = btn('−10W', 'minus', '', '←') + `<div class="val"><small>目標</small>${ride.ergW}W</div>` + btn('+10W', 'plus', '', '→');
     }
     r1 += btn('終了', 'end', 'end');
-    c.innerHTML = `<div class="crow">${r1}</div><div class="crow">${r2}</div>`;
+    c.innerHTML = `<div class="crow">${r1}</div><div class="crow">${r2}</div><div class="keys">スペース 一時停止　← → 調整　${ride.mode === 'workout' ? 'S スキップ　E ERG' : 'M モード'}　F 全画面</div>`;
     const sim = dev.trainer instanceof BLE.SimTrainer;
     const sb = $('#r-sim');
     sb.hidden = !sim;
-    if (sim) {
-      sb.innerHTML = `<span>シミュ</span><button data-ract="sim-ped">${dev.trainer.pedaling ? '止まる' : '漕ぐ'}</button><span>脚力 ${dev.trainer.effort}W</span><button data-ract="sim-down">−20</button><button data-ract="sim-up">+20</button>`;
-    }
+    if (sim) sb.innerHTML = `<span>シミュ</span><button data-ract="sim-ped">${dev.trainer.pedaling ? '止まる' : '漕ぐ'}</button><span>脚力 ${dev.trainer.effort}W</span><button data-ract="sim-down">−20</button><button data-ract="sim-up">+20</button>`;
   }
 
-  $('#v-ride').addEventListener('click', async (ev) => {
-    const b = ev.target.closest('[data-ract]'); if (!b || !ride) return;
-    const a = b.dataset.ract;
+  function rideAction(a) {
+    if (!ride) return;
     if (a === 'pause') { ride.paused = !ride.paused; $('#r-paused').hidden = !ride.paused; $('#r-paused').textContent = '一時停止中'; }
     else if (a === 'minus' || a === 'plus') {
       const s = a === 'plus' ? 1 : -1;
       if (ride.mode === 'workout' && !ride.done) ride.offset = clamp(ride.offset + 5 * s, -50, 50);
+      else if (ride.mode === 'workout') return;
+      else if (ride.freeMode === 'course') ride.diff = clamp(ride.diff + 10 * s, 30, 150);
       else if (ride.freeMode === 'sim') ride.grade = clamp(Math.round((ride.grade + 0.5 * s) * 10) / 10, -5, 15);
       else ride.ergW = clamp(ride.ergW + 10 * s, 50, 1000);
       applyControl();
     } else if (a === 'skip') {
       const st = currentStep(); if (st) { ride.wt = st.step.start + st.step.d; ride.lastStep = -1; applyControl(); }
-    } else if (a === 'erg') { ride.ergOn = !ride.ergOn; applyControl(); toast(ride.ergOn ? 'ERGオン：目標ワットに自動で合わせます' : 'ERGオフ：負荷は平地相当になります'); }
-    else if (a === 'mode') { ride.freeMode = ride.freeMode === 'sim' ? 'erg' : 'sim'; applyControl(); }
+    } else if (a === 'erg') { if (ride.mode !== 'workout' || ride.done) return; ride.ergOn = !ride.ergOn; applyControl(); toast(ride.ergOn ? 'ERGオン：目標ワットに自動で合わせます' : 'ERGオフ：負荷は平地相当になります'); }
+    else if (a === 'mode') { if (ride.mode !== 'free') return; ride.freeMode = { course: 'sim', sim: 'erg', erg: 'course' }[ride.freeMode]; applyControl(); toast({ course: 'コースモード：坂に合わせて負荷が変わります', sim: '勾配モード：勾配を自分で決めます', erg: 'ワットモード：負荷をワットで固定します' }[ride.freeMode]); }
+    else if (a === 'fullscreen') { toggleFullscreen(); return; }
     else if (a === 'end') { endRide(); return; }
     else if (a === 'sim-ped') dev.trainer.pedaling = !dev.trainer.pedaling;
     else if (a === 'sim-up') dev.trainer.effort = Math.min(600, dev.trainer.effort + 20);
     else if (a === 'sim-down') dev.trainer.effort = Math.max(40, dev.trainer.effort - 20);
     renderControls(); renderRide();
+  }
+  $('#v-ride').addEventListener('click', (ev) => { const b = ev.target.closest('[data-ract]'); if (b) rideAction(b.dataset.ract); });
+  function toggleFullscreen() {
+    const d = document;
+    try {
+      if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+      else { const el = d.documentElement; (el.requestFullscreen || el.webkitRequestFullscreen).call(el); }
+    } catch (e) { toast('このブラウザでは全画面にできません'); }
+  }
+  document.addEventListener('keydown', (ev) => {
+    if (ev.target.closest('input, textarea') || !$('#modal').hidden) return;
+    if (!ride || !ride.active || $('#v-ride').hidden) return;
+    const k = ev.key;
+    const map = { ' ': 'pause', ArrowLeft: 'minus', ArrowDown: 'minus', ArrowRight: 'plus', ArrowUp: 'plus', s: 'skip', S: 'skip', e: 'erg', E: 'erg', m: 'mode', M: 'mode', f: 'fullscreen', F: 'fullscreen' };
+    if (map[k]) { ev.preventDefault(); rideAction(map[k]); }
   });
 
   async function endRide() {
@@ -2255,17 +2370,18 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     if (dev.trainer) dev.trainer.setSim(0);
     keepAwake(false);
     Store.del('rt.inprogress');
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* */ }
     if (choice === 'discard') { ride = null; resetTo('home'); return; }
-    const rec = buildRecord(ride.id, ride.name, ride.workout && ride.workout.id, ride.startWall || ride.created, ride.sm, cfg.ftp, ride.workout && ride.workout.test);
+    const rec = buildRecord(ride.id, ride.name, ride.workout && ride.workout.id, ride.startWall || ride.created, ride.sm, cfg.ftp, ride.workout && ride.workout.test, { maxP: ride.maxP, laps: ride.laps, mode: ride.mode });
     try { await DB.put(rec); } catch (e) { toast('保存に失敗しました。下のボタンでファイルに書き出してください', 5000); }
     ride = null;
     viewing = rec;
     resetTo('summary');
   }
 
-  function buildRecord(id, name, workoutId, start, sm, ftp, test) {
+  function buildRecord(id, name, workoutId, start, sm, ftp, test, extra = {}) {
     const summary = Metrics.summarize(sm, ftp);
-    return { id, name, workoutId: workoutId || null, start, ftp, weight: cfg.weight, test: test || null, samples: sm, summary };
+    return { id, name, workoutId: workoutId || null, start, ftp, weight: cfg.weight, test: test || null, samples: sm, summary, bib: cfg.bib, ...extra };
   }
 
   /* ---------- charts ---------- */
@@ -2293,7 +2409,7 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       }
     }
     // FTP line
-    ctx.strokeStyle = opts.dark ? 'rgba(255,255,255,.35)' : 'rgba(34,48,90,.35)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, Y(100)); ctx.lineTo(W, Y(100)); ctx.stroke(); ctx.setLineDash([]);
     if (opts.actual) {
       ctx.strokeStyle = opts.dark ? '#FFFFFF' : '#1D1D1F'; ctx.lineWidth = 1.5; ctx.beginPath();
@@ -2308,10 +2424,10 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     const cv = $('#r-strip');
     if (!ride) return;
     if (ride.mode === 'workout') {
-      drawProfile(cv, ride.steps, { dark: true, pos: ride.done ? ride.total : ride.wt, bg: '#161F3D', actual: null });
+      drawProfile(cv, ride.steps, { dark: true, pos: ride.done ? ride.total : ride.wt, bg: 'rgba(0,0,0,0)', actual: null });
     } else {
       const { ctx, W, H } = prepCanvas(cv);
-      ctx.fillStyle = '#161F3D'; ctx.fillRect(0, 0, W, H);
+      ctx.clearRect(0, 0, W, H);
       const p = ride.sm.p.slice(-600);
       const maxP = Math.max(cfg.ftp * 1.3, ...p);
       p.forEach((v, i) => {
@@ -2343,7 +2459,7 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       for (let i = 0; i < n; i += step) { const v = sm.hr[i]; if (!v) { st = false; continue; } const y = H - ((v - lo) / (hi - lo)) * (H - 14) - 4; if (st) ctx.lineTo(X(i), y); else { ctx.moveTo(X(i), y); st = true; } }
       ctx.stroke();
     }
-    ctx.fillStyle = '#4b5a40'; ctx.font = '11px system-ui';
+    ctx.fillStyle = '#5B6B75'; ctx.font = '11px system-ui';
     ctx.fillText('パワー（色＝ゾーン）', 6, 13);
     if (hrs.length) { ctx.fillStyle = '#A81B22'; ctx.fillText('心拍', 120, 13); }
   }
@@ -2382,10 +2498,10 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       $('#wd-title').textContent = w.name;
       $('#wd-desc').textContent = w.desc || '';
       const steps = Workouts.flatten(w.blocks);
-      requestAnimationFrame(() => drawProfile($('#wd-profile'), steps));
+      requestAnimationFrame(() => drawProfile($('#wd-profile'), steps, { bg: '#1A2D39' }));
       const dur = Workouts.duration(w.blocks);
       const kj = Math.round(steps.reduce((a, s) => a + (s.free ? 50 : (s.p0 + s.p1) / 2) / 100 * cfg.ftp * s.d, 0) / 1000);
-      $('#wd-facts').innerHTML = `<div><dt>時間</dt><dd>${fmtDur(dur)}</dd></div><div><dt>TSS目安</dt><dd>${Workouts.estimateTSS(w.blocks)}</dd></div><div><dt>食べもの目安</dt><dd>${kj >= 500 ? `🍜${(kj / 500).toFixed(1)}` : `🥟${Math.round(kj / 40)}`}</dd></div>`;
+      $('#wd-facts').innerHTML = `<div><dt>時間</dt><dd>${fmtDur(dur)}</dd></div><div><dt>TSS目安</dt><dd>${Workouts.estimateTSS(w.blocks)}</dd></div><div><dt>燃やせる目安</dt><dd>${(() => { const lv = Workouts.level(kj); return lv ? `${lv.f.e}${lv.n > 1 ? `×${lv.n}` : ''}` : '—'; })()}</dd></div>`;
       $('#wd-steps').innerHTML = w.blocks.map((b) => {
         let txt = '', p = 50, d = 0;
         const W = (pct) => `${Math.round((cfg.ftp * pct) / 100)}W`;
@@ -2406,53 +2522,56 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       const rides = (await DB.all()).sort((a, b) => b.start - a.start);
       if (!rides.length) { $('#hist-list').innerHTML = '<li class="empty">まだ記録がありません。ひと漕ぎしてきましょう。</li>'; return; }
       $('#hist-list').innerHTML = rides.map((r) => {
-        const s = r.summary; const f = Workouts.receipt(s.kcal);
-        const food = `${f.ramen ? `🍜×${f.ramen} ` : ''}${f.gyoza ? `🥟×${f.gyoza}` : ''}` || '🥟×0';
+        const s = r.summary; const lv = Workouts.level(s.kcal);
+        const food = lv ? `${lv.f.e} ${Workouts.label(lv.f, lv.n)}ぶん` : '';
         return `<li><button class="item" data-rid="${esc(r.id)}"><div class="item-name">${esc(r.name)}</div>
           <div class="item-meta"><span>${fmtDate(r.start)}</span><span>${fmtClock(s.duration)}</span><span>平均${s.avgPower}W</span><span class="food-meta">${food}</span></div></button></li>`;
       }).join('');
     },
     settings() {
-      $('#s-ftp').value = cfg.ftp; $('#s-weight').value = cfg.weight; $('#s-bike').value = cfg.bike; $('#s-maxhr').value = cfg.maxHR;
+      $('#s-ftp').value = cfg.ftp; $('#s-weight').value = cfg.weight; $('#s-bike').value = cfg.bike; $('#s-maxhr').value = cfg.maxHR; $('#s-bib').value = cfg.bib;
       $('#s-autopause').checked = cfg.autoPause; $('#s-sound').checked = cfg.sound; $('#s-wake').checked = cfg.wake; $('#s-sim').checked = cfg.sim;
       $('#s-sim').disabled = !btOK;
     },
     log() { $('#log-pre').textContent = BLE.logBuf.join('\n') || 'まだログはありません'; },
   };
 
-  /* ---------- summary (receipt) ---------- */
+  /* ---------- result (finisher card) ---------- */
   function renderSummary() {
     const r = viewing; if (!r) return;
-    const s = r.summary; const f = Workouts.receipt(s.kcal);
-    const rows = [
-      ['時間', fmtClock(s.duration)], ['距離（バーチャル）', `${(s.distance / 1000).toFixed(2)} km`],
-      ['平均パワー', `${s.avgPower} W`], ['NP', `${s.np} W`], ['最大パワー', `${s.maxPower} W`],
-      ['IF / TSS', `${s.IF.toFixed(2)} / ${s.tss}`],
-      ['平均心拍 / 最大', s.avgHR ? `${s.avgHR} / ${s.maxHR} bpm` : '—'],
-      ['平均ケイデンス', s.avgCad ? `${s.avgCad} rpm` : '—'],
-      ['仕事量', `${s.kj} kJ`],
-    ];
-    const foodItems = [];
-    if (f.ramen) foodItems.push(['🍜 ラーメン', `${f.ramen}杯`]);
-    if (f.gyoza) foodItems.push(['🥟 餃子', `${f.gyoza}個`]);
-    if (!foodItems.length) foodItems.push(['🥟 餃子', 'まだ1個未満']);
-    const emojis = '🍜'.repeat(Math.min(f.ramen, 10)) + '🥟'.repeat(Math.min(f.gyoza, 30));
+    const s = r.summary;
+    const finished = (r.laps && r.laps.length) || (r.maxP != null && r.maxP >= 0.999);
+    const reachP = r.maxP != null ? r.maxP : 0;
+    const stage = Course.STAGES[Course.stageAt(Math.min(0.9999, reachP))];
+    const seed = parseInt(String(r.id).replace(/\D/g, '').slice(-9), 10) || 7;
+    const foods = Workouts.combo(s.kcal, seed);
+    const goalTime = r.laps && r.laps.length ? Math.min(...r.laps) : null;
+    const cell = (k, v, u = '') => `<div><dt>${k}</dt><dd>${v}${u ? `<small>${u}</small>` : ''}</dd></div>`;
     let ftpBox = '';
     if (r.test === 'ramp' && s.best1m) {
       const est = Math.round(s.best1m * 0.75);
-      ftpBox = `<div class="rc-ftp"><div>最高1分パワー ${s.best1m}W → 推定FTP</div><b>${est} W</b><div class="row-btns" style="margin-top:8px"><button class="btn outline" data-sact="set-ftp" data-v="${est}">FTPを${est}Wにする</button></div></div>`;
+      ftpBox = `<div class="fn-ftp"><div>最高1分パワー ${s.best1m}W から推定したFTP</div><b>${est} W</b><div class="row-btns" style="margin-top:8px"><button class="btn outline" data-sact="set-ftp" data-v="${est}">FTPを${est}Wにする</button></div></div>`;
     }
     $('#sum-body').innerHTML = `
-      <div class="receipt">
-        <div class="rc-head"><h2>御会計</h2><span>${fmtDate(r.start)}</span></div>
-        <div class="rc-name">${esc(r.name)}</div>
-        <dl class="rc-rows">${rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
-        <div class="rc-food"><h3>消費カロリー（目安）</h3><div class="total">${s.kcal}<small>kcal</small></div>
-          <ul>${foodItems.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join('')}</ul>
-          <div class="emojis">${emojis}</div></div>
-        <canvas class="rc-chart" id="sum-chart"></canvas>
+      <article class="finisher">
+        <div class="fn-top">
+          <div><div class="fn-kicker">TOUGE INDOOR HILLCLIMB</div><h2 class="fn-title">${finished ? 'FINISHER' : 'RIDE RESULT'}</h2></div>
+          <div class="fn-bib"><small>No.</small><b>${String(r.bib || cfg.bib).padStart(3, '0')}</b></div>
+        </div>
+        <div class="fn-name">${esc(r.name)}</div>
+        <div class="fn-date">${fmtDate(r.start)}</div>
+        <div class="fn-time"><b>${fmtClock(goalTime || s.duration)}</b><span>${goalTime ? 'ゴールタイム' : '走行時間'}</span></div>
+        <div class="fn-reach">${finished ? '<em>完走</em>湖畔のゴールまで上りきりました' : `<em>到達</em>${esc(stage.name)}（標高 +${Math.round(Course.elevAt(reachP))} m）`}</div>
+        <dl class="fn-grid">
+          ${cell('平均パワー', s.avgPower, 'W')}${cell('NP', s.np, 'W')}${cell('最大', s.maxPower, 'W')}
+          ${cell('平均心拍', s.avgHR || '—', s.avgHR ? 'bpm' : '')}${cell('ケイデンス', s.avgCad || '—', s.avgCad ? 'rpm' : '')}${cell('TSS', s.tss, '')}
+          ${cell('IF', s.IF.toFixed(2))}${cell('仕事量', s.kj, 'kJ')}${cell('距離', (s.distance / 1000).toFixed(1), 'km')}
+        </dl>
+        <div class="fn-food"><h3>燃やしたカロリー（目安）</h3><div class="kc">${s.kcal}<small>kcal</small></div>
+          <ul>${foods.length ? foods.map((o) => `<li><span>${o.f.e}</span><span>${esc(Workouts.label(o.f, o.n))}</span><span>${o.f.k * o.n} kcal</span></li>`).join('') : '<li><span>🔥</span><span>次はもっと燃やそう</span><span></span></li>'}</ul></div>
+        <canvas class="fn-chart" id="sum-chart"></canvas>
         ${ftpBox}
-      </div>
+      </article>
       <div class="sum-actions">
         <button class="btn primary block" data-sact="strava">Stravaにアップする</button>
         <div class="row-btns">
@@ -2463,50 +2582,6 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       </div>`;
     requestAnimationFrame(() => drawRideChart($('#sum-chart'), r));
   }
-
-  const fileBase = (r) => { const d = new Date(r.start); return `rollertei_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`; };
-  async function exportFile(blob, filename) {
-    if (window.claude && typeof window.claude.use === 'function') {
-      modal('プレビューでは保存できません', '<p>このプレビュー画面ではファイルを保存できません。GitHub Pagesなどで公開したページをBluefyで開くと、FITの保存とStravaへのアップロードができます。</p>', [{ label: 'OK', value: 0 }]);
-      return false;
-    }
-    let file = null;
-    try { file = new File([blob], filename, { type: blob.type || 'application/octet-stream' }); } catch (e) { /* old webview */ }
-    if (file && navigator.canShare && navigator.share) {
-      try {
-        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: filename }); return true; }
-      } catch (e) { if (e.name === 'AbortError') return false; BLE.log(`share失敗: ${e.message}`); }
-    }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename; a.rel = 'noopener';
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { a.remove(); }, 1000);
-    setTimeout(() => URL.revokeObjectURL(url), 120000);
-    modal('ファイルを保存', `<p>保存画面が出なかったときは、下のリンクを長押しして「ダウンロード」または「リンク先を保存」を選んでください。</p><p><a href="${url}" download="${esc(filename)}">${esc(filename)}</a></p>`, [{ label: '閉じる', value: 0 }]);
-    return true;
-  }
-  const fitBlob = (r) => new Blob([FIT.encode(r)], { type: 'application/octet-stream' });
-
-  $('#v-summary').addEventListener('click', async (ev) => {
-    const b = ev.target.closest('[data-sact]'); if (!b || !viewing) return;
-    const a = b.dataset.sact; const r = viewing;
-    if (a === 'fit') exportFile(fitBlob(r), `${fileBase(r)}.fit`);
-    else if (a === 'tcx') exportFile(new Blob([FIT.tcx(r)], { type: 'application/vnd.garmin.tcx+xml' }), `${fileBase(r)}.tcx`);
-    else if (a === 'strava') {
-      const go = await modal('Stravaにアップする', `<ol>
-          <li>このあと出る画面で「"ファイル"に保存」を選んで、FITファイルを保存します。</li>
-          <li>Safariで <a href="https://www.strava.com/upload/select" target="_blank" rel="noopener">strava.com/upload/select</a> を開いてログインします。スマホ用の画面になったら、アドレスバーの「ぁあ」から「デスクトップ用Webサイトを表示」を選びます。</li>
-          <li>「ファイルを選択」で保存したFITを選ぶと、アップロードされます。</li></ol>
-          <p class="note">Strava無料会員はAPIを使えないため、この手動アップロードの方法にしています。</p>`,
-        [{ label: 'FITを保存する', value: 'fit', cls: 'primary' }, { label: '閉じる', value: 0 }]);
-      if (go === 'fit') exportFile(fitBlob(r), `${fileBase(r)}.fit`);
-    } else if (a === 'delete') {
-      const ok = await modal('この記録を削除しますか？', '<p>削除すると元に戻せません。</p>', [{ label: '削除する', value: true, cls: 'primary' }, { label: 'やめる', value: false }]);
-      if (ok) { await DB.del(r.id); viewing = null; toast('削除しました'); resetTo('history'); }
-    } else if (a === 'set-ftp') {
-      cfg.ftp = parseInt(b.dataset.v, 10); saveCfg(); toast(`FTPを${cfg.ftp}Wにしました`);
-    }
-  });
 
   /* ---------- editor ---------- */
   const BLOCK_NAMES = { steady: '一定', ramp: 'ランプ', intervals: 'インターバル', free: '自由走' };
@@ -2532,7 +2607,7 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
   function edPreview() {
     const w = editing;
     const steps = Workouts.flatten(w.blocks);
-    drawProfile($('#ed-profile'), steps.length ? steps : [{ start: 0, d: 1, p0: 0, p1: 0 }]);
+    drawProfile($('#ed-profile'), steps.length ? steps : [{ start: 0, d: 1, p0: 0, p1: 0 }], { bg: '#1A2D39' });
     $('#ed-sum').textContent = `合計 ${fmtDur(Workouts.duration(w.blocks))}　TSS 約${Workouts.estimateTSS(w.blocks)}　（FTP ${cfg.ftp}W）`;
   }
   $('#ed-blocks').addEventListener('input', (ev) => {
@@ -2565,6 +2640,7 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
     if (id === 's-weight') cfg.weight = n(ev.target.value, 20, 200, cfg.weight);
     if (id === 's-bike') cfg.bike = n(ev.target.value, 3, 30, cfg.bike);
     if (id === 's-maxhr') cfg.maxHR = Math.round(n(ev.target.value, 100, 230, cfg.maxHR));
+    if (id === 's-bib') cfg.bib = Math.round(n(ev.target.value, 1, 9999, cfg.bib));
     if (id === 's-autopause') cfg.autoPause = ev.target.checked;
     if (id === 's-sound') cfg.sound = ev.target.checked;
     if (id === 's-wake') cfg.wake = ev.target.checked;
@@ -2611,9 +2687,9 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
       stack.pop(); if (stack[stack.length - 1] === 'wdetail') show('wdetail', false); else { stack.push('wdetail'); show('wdetail', false); }
     } else if (a === 'backup') {
       const rides = await DB.all();
-      const blob = new Blob([JSON.stringify({ app: 'rollertei', v: 1, exported: Date.now(), rides, workouts: Workouts.loadCustom() })], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ app: 'touge', v: 1, exported: Date.now(), rides, workouts: Workouts.loadCustom() })], { type: 'application/json' });
       const d = new Date();
-      exportFile(blob, `rollertei_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`);
+      exportFile(blob, `touge_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`);
     } else if (a === 'copy-log') {
       try { await navigator.clipboard.writeText(BLE.logBuf.join('\n')); toast('コピーしました'); } catch (e) { toast('コピーできませんでした。長押しで選択してください'); }
     }
@@ -2638,14 +2714,14 @@ const NOSLEEP_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjM
         [{ label: '保存する', value: true, cls: 'primary' }, { label: '捨てる', value: false }]);
       Store.del('rt.inprogress');
       if (ok) {
-        const rec = buildRecord(p.id, p.name, p.workoutId, p.start, p.sm, p.ftp || cfg.ftp, null);
+        const rec = buildRecord(p.id, p.name, p.workoutId, p.start, p.sm, p.ftp || cfg.ftp, null, { maxP: p.maxP || 0, laps: p.laps || [], mode: p.mode });
         await DB.put(rec); viewing = rec; show('summary');
       }
     } catch (e) { Store.del('rt.inprogress'); }
   })();
 
   // test hook
-  window.__rt = { cfg, live, get ride() { return ride; }, dev, homeScene, rideScene, show, newRide, DB, endRide };
+  window.__rt = { cfg, live, get ride() { return ride; }, dev, homeScene, rideScene, show, newRide, DB, endRide, get viewing() { return viewing; } };
 })();
 </script>
 </body>

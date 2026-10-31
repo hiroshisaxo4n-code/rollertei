@@ -10,7 +10,7 @@ const Workouts = (() => {
   for (let p = 50; p <= 160; p += 6) rampTestSteps.push(s(60, p));
 
   const builtins = [
-    { id: 'b-first', name: 'はじめの一杯', desc: 'まずは軽く20分。接続とERGの動きを確かめるのにちょうどいい。', blocks: [r(300, 45, 65), s(600, 65), r(300, 60, 40)] },
+    { id: 'b-first', name: 'ウォームアップ20分', desc: 'まずは軽く20分。接続とERGの動きを確かめるのにちょうどいい。', blocks: [r(300, 45, 65), s(600, 65), r(300, 60, 40)] },
     { id: 'b-recovery', name: '回復ライド', desc: '脚を回すだけの30分。疲れている日に。', blocks: [r(300, 40, 55), s(1200, 55), r(300, 55, 40)] },
     { id: 'b-ss', name: 'スイートスポット 2×10分', desc: 'FTPの90%で10分を2本。効率よく地脚をつくる定番。', blocks: [r(600, 45, 75), iv(2, 600, 90, 300, 55), r(300, 55, 40)] },
     { id: 'b-pyramid', name: 'ピラミッド', desc: '2分ごとに強度が上がって、また下がる。', blocks: [r(480, 45, 70), s(120, 80), s(120, 90), s(120, 100), s(120, 110), s(120, 100), s(120, 90), s(120, 80), r(480, 60, 40)] },
@@ -88,27 +88,63 @@ const Workouts = (() => {
     return { id: `c-${Date.now()}`, name: name.trim(), desc: desc.trim().slice(0, 300), blocks };
   }
 
-  /* ---------- food equivalents (目安) ---------- */
-  const GYOZA = 40;
-  const MILESTONES = [
-    { k: 40, e: '🥟', t: '餃子1個ぶん' },
-    { k: 120, e: '🥟', t: '餃子3個ぶん' },
-    { k: 180, e: '🍙', t: 'おにぎり1個ぶん' },
-    { k: 240, e: '🥟', t: '餃子1人前ぶん' },
-    { k: 330, e: '🍰', t: 'ショートケーキぶん' },
-    { k: 500, e: '🍜', t: 'ラーメン1杯ぶん' },
-    { k: 740, e: '🍜', t: 'ラーメン＋餃子ぶん' },
-    { k: 1000, e: '🍜', t: 'ラーメン2杯ぶん' },
-    { k: 1440, e: '🍚', t: 'ラーメン餃子チャーハンぶん' },
-    { k: 2000, e: '🏮', t: '店ごといけるぶん' },
+  /* ---------- food equivalents (目安kcal) ---------- */
+  const FOODS = [
+    { e: '🍬', n: '飴', u: '粒', k: 15 },
+    { e: '🍫', n: 'チョコ', u: 'かけ', k: 30 },
+    { e: '🍪', n: 'クッキー', u: '枚', k: 50 },
+    { e: '🍌', n: 'バナナ', u: '本', k: 90 },
+    { e: '🍡', n: 'みたらし団子', u: '本', k: 120 },
+    { e: '🍮', n: 'プリン', u: '個', k: 150 },
+    { e: '🍙', n: 'おにぎり', u: '個', k: 180 },
+    { e: '🍺', n: '生ビール', u: '杯', k: 200 },
+    { e: '🍦', n: 'ソフトクリーム', u: '個', k: 210 },
+    { e: '🍩', n: 'ドーナツ', u: '個', k: 250 },
+    { e: '🍔', n: 'ハンバーガー', u: '個', k: 260 },
+    { e: '🍢', n: '焼きまんじゅう', u: '本', k: 280 },
+    { e: '🍰', n: 'ショートケーキ', u: '個', k: 330 },
+    { e: '🍟', n: 'フライドポテトM', u: '個', k: 410 },
+    { e: '🍜', n: 'ラーメン', u: '杯', k: 500 },
+    { e: '🍣', n: 'にぎり寿司', u: '人前', k: 550 },
+    { e: '🍝', n: 'ナポリタン', u: '皿', k: 650 },
+    { e: '🍱', n: '幕の内弁当', u: '個', k: 700 },
+    { e: '🍛', n: 'カレーライス', u: '皿', k: 750 },
+    { e: '🍚', n: 'カツ丼', u: '杯', k: 900 },
   ];
-  function nextMilestone(kcal) { return MILESTONES.find((m) => m.k > kcal) || null; }
-  /* split kcal into ramen bowls + gyoza pieces for the receipt */
-  function receipt(kcal) {
-    const ramen = Math.floor(kcal / 500);
-    const rest = kcal - ramen * 500;
-    const gyoza = Math.floor(rest / GYOZA);
-    return { ramen, gyoza, rest: rest - gyoza * GYOZA };
+  /* foods shown as you ride: one step up the ladder at a time */
+  const LADDER = ['飴', 'クッキー', 'バナナ', 'みたらし団子', 'おにぎり', 'ドーナツ', '焼きまんじゅう', 'ショートケーキ', 'フライドポテトM', 'ラーメン', 'ナポリタン', 'カレーライス', 'カツ丼']
+    .map((n) => FOODS.find((f) => f.n === n));
+  const BIG = ['ラーメン', 'ハンバーガー', '焼きまんじゅう', 'ドーナツ', 'おにぎり', 'バナナ'].map((n) => FOODS.find((f) => f.n === n));
+  function level(kcal) {
+    if (kcal < 1000) {
+      let lv = -1;
+      LADDER.forEach((f, i) => { if (kcal >= f.k) lv = i; });
+      return lv < 0 ? null : { id: `l${lv}`, f: LADDER[lv], n: 1 };
+    }
+    const step = Math.floor(kcal / 500);           // a new big food every 500 kcal
+    const f = BIG[step % BIG.length];
+    return { id: `b${step}`, f, n: Math.max(1, Math.floor(kcal / f.k)) };
+  }
+  function nextLevelK(kcal) {
+    if (kcal < 1000) { const f = LADDER.find((x) => x.k > kcal); return f ? f.k : 1000; }
+    return (Math.floor(kcal / 500) + 1) * 500;
+  }
+  const label = (f, n) => `${f.n}${n}${f.u}`;
+  /* a varied combination for the finisher card (stable per seed) */
+  function combo(kcal, seed = 1) {
+    let x = (Math.imul(seed | 0, 2654435761) ^ 0x9E3779B9) >>> 0 || 1;
+    const rnd = () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return (x % 10000) / 10000; };
+    for (let i = 0; i < 5; i++) rnd();
+    const out = [];
+    let rest = Math.round(kcal);
+    while (rest >= 15 && out.length < 4) {
+      const c = FOODS.filter((f) => f.k <= rest && !out.some((o) => o.f === f)).sort((a, b) => b.k - a.k);
+      if (!c.length) break;
+      const f = c[Math.floor(rnd() * Math.min(out.length ? 4 : 3, c.length))];
+      const n = Math.max(1, Math.min(Math.floor(rest / f.k), out.length === 0 ? 3 : 2));
+      out.push({ f, n }); rest -= f.k * n;
+    }
+    return out;
   }
 
   /* ---------- custom workouts storage ---------- */
@@ -122,8 +158,39 @@ const Workouts = (() => {
 
   return {
     builtins, flatten, duration, at, estimateTSS, zoneOf, ZONE_COLORS, parseZWO,
-    GYOZA, MILESTONES, nextMilestone, receipt, all, get, upsert, remove, loadCustom,
+    FOODS, level, nextLevelK, label, combo, all, get, upsert, remove, loadCustom,
   };
+})();
+
+/* ============================================================
+   Virtual hill-climb course (15 km, ~950 m up, six sections)
+   ============================================================ */
+const Course = (() => {
+  const L = 15000;
+  const STAGES = [
+    { p: 0.00, key: 'town', name: '麓の町', g: 3.5 },
+    { p: 0.12, key: 'cedar', name: '杉並木', g: 6.5 },
+    { p: 0.36, key: 'hairpin', name: 'つづら折り', g: 7.5 },
+    { p: 0.56, key: 'steep', name: '激坂', g: 10.0 },
+    { p: 0.78, key: 'plateau', name: '高原', g: 5.0 },
+    { p: 0.93, key: 'lake', name: '湖畔', g: 1.5 },
+  ];
+  const c01 = (p) => Math.max(0, Math.min(0.99999, p));
+  function stageAt(p) { p = c01(p); let i = 0; STAGES.forEach((s, k) => { if (p >= s.p) i = k; }); return i; }
+  function gradeAt(p) {
+    p = c01(p);
+    const i = stageAt(p);
+    let g = STAGES[i].g;
+    const nx = STAGES[i + 1];
+    if (nx && nx.p - p < 0.02) { const k = 1 - (nx.p - p) / 0.02; g += (nx.g - g) * k * k * (3 - 2 * k) * 0.5; }
+    if (i > 0 && p - STAGES[i].p < 0.02) { const k = 1 - (p - STAGES[i].p) / 0.02; g += (STAGES[i - 1].g - g) * k * k * (3 - 2 * k) * 0.5; }
+    g += Math.sin(p * 97) * 0.9 + Math.sin(p * 31 + 1) * 0.6;
+    return Math.max(0.5, Math.round(g * 10) / 10);
+  }
+  const N = 600, elev = [0];
+  for (let k = 1; k <= N; k++) elev[k] = elev[k - 1] + (gradeAt((k - 0.5) / N) / 100) * (L / N);
+  const elevAt = (p) => { const x = c01(p) * N, i = Math.floor(x); return elev[i] + (elev[Math.min(N, i + 1)] - elev[i]) * (x - i); };
+  return { L, STAGES, stageAt, gradeAt, elevAt, total: elev[N], elev };
 })();
 
 /* tiny storage wrapper: survives sandboxes where localStorage throws */
@@ -136,4 +203,4 @@ const Store = (() => {
   };
 })();
 
-if (typeof module !== 'undefined') module.exports = { Workouts, Store };
+if (typeof module !== 'undefined') module.exports = { Workouts, Store, Course };

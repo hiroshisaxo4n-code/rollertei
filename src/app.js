@@ -20,10 +20,11 @@
   const fmtDate = (ms) => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
 
   /* ---------- settings ---------- */
-  const DEFAULTS = { ftp: 200, weight: 65, bike: 9, maxHR: 185, autoPause: true, sound: true, wake: true, sim: false };
+  const DEFAULTS = { ftp: 200, weight: 65, bike: 9, maxHR: 185, autoPause: true, sound: true, wake: true, sim: false, bib: 0 };
   let cfg = { ...DEFAULTS };
   try { cfg = { ...DEFAULTS, ...JSON.parse(Store.get('rt.cfg') || '{}') }; } catch (e) { /* defaults */ }
   const saveCfg = () => Store.set('rt.cfg', JSON.stringify(cfg));
+  if (!cfg.bib) { cfg.bib = 100 + Math.floor(Math.random() * 900); saveCfg(); }
   const btOK = BLE.available();
   if (!btOK) cfg.sim = true;
 
@@ -158,31 +159,29 @@
     const anyOn = ['trainer', 'hr'].some((k) => dev[k] && dev[k].state === 'connected');
     $('#home-live').hidden = !anyOn;
     $('#bt-note').textContent = !btOK
-      ? 'このブラウザはBluetoothに対応していないので、シミュレーターで動いています。Saris H3につなぐときは、iPhoneのBluefyでこのページを開いてください。'
+      ? 'このブラウザはBluetoothに対応していないので、シミュレーターで動いています。実機につなぐときは、iPhoneはBluefy、パソコンはChromeかEdgeでこのページを開いてください。'
       : cfg.sim
       ? 'シミュレーターで動いています。実機につなぐときは設定でオフにしてください。'
-      : 'Saris H3とWahooの心拍計は、電源を入れてから「接続」を押してください。';
+      : 'トレーナーと心拍計の電源を入れてから「接続」を押してください。ほかのアプリやスマホとつながっていると見つからないことがあります。';
     if (ride && ride.active) renderControls();
   }
 
   /* ---------- scenes ---------- */
   const homeScene = new Scene.World($('#home-scene'), { compact: true });
-  let worldName = '公園';
   const rideScene = new Scene.World($('#ride-scene'), {
-    onTheme: (th) => {
-      worldName = th.name;
-      $('#r-world span').textContent = th.name;
-      $('#r-world i').style.background = Workouts.ZONE_COLORS[rideScene.zone];
-      toast(`${th.name}に入った`, 1600);
+    onStage: (st) => {
+      if (!ride || !ride.active) return;
+      const i = Course.STAGES.indexOf(st);
+      toast(`区間 ${i + 1}/6　${st.name}`, 1800);
     },
   });
   function dayFromClock(d = new Date()) {
     const h = d.getHours() + d.getMinutes() / 60;
-    const K = [[0, 0.88], [4.5, 0.97], [5.5, 0.02], [7, 0.1], [12, 0.45], [17, 0.6], [18.3, 0.68], [19.3, 0.76], [20.3, 0.82], [24, 0.88]];
+    const K = [[0, 0.88], [4.5, 0.97], [5.5, 0.02], [7, 0.1], [12, 0.45], [17, 0.6], [18.3, 0.67], [19.3, 0.75], [20.3, 0.82], [24, 0.88]];
     for (let i = 0; i < K.length - 1; i++) {
       if (h >= K[i][0] && h <= K[i + 1][0]) {
         const k = (h - K[i][0]) / (K[i + 1][0] - K[i][0]);
-        let a = K[i][1], b = K[i + 1][1]; if (b < a) b += 1;
+        const a = K[i][1]; let b = K[i + 1][1]; if (b < a) b += 1;
         return (a + (b - a) * k) % 1;
       }
     }
@@ -226,14 +225,15 @@
     const steps = workout ? Workouts.flatten(workout.blocks) : null;
     ride = {
       id: `r${Date.now()}`, active: true, workout, steps, total: steps ? steps.reduce((a, s) => a + s.d, 0) : 0,
-      mode: workout ? 'workout' : 'free', freeMode: 'sim', grade: 0, ergW: Math.round(cfg.ftp * 0.6 / 5) * 5,
+      mode: workout ? 'workout' : 'free', freeMode: 'course', grade: 3, ergW: Math.round(cfg.ftp * 0.6 / 5) * 5, diff: 100,
       started: false, paused: false, autoPaused: false, zero: 0, t: 0, wt: 0, offset: 0, ergOn: true, done: false,
-      sm: { ts: [], p: [], hr: [], cad: [], spd: [], dist: [], tgt: [] }, dist: 0, vs: 0, kj: 0, ms: 0, target: null,
-      lastStep: -1, startWall: null, name: workout ? workout.name : 'フリーライド', created: Date.now(),
+      sm: { ts: [], p: [], hr: [], cad: [], spd: [], dist: [], tgt: [] }, dist: 0, cdist: 0, vs: 0, kj: 0, target: null,
+      foodId: null, lastStep: -1, startWall: null, name: workout ? workout.name : 'ヒルクライム', created: Date.now(),
+      gate: false, laps: [], lapStartT: 0, maxP: 0,
     };
-    rideScene.set({ day: 0.06, speed: 0, cadence: 0, intensity: 0.3 });
-    rideScene.jumpZone(1); zoneState.ride = 1;
-    worldName = '公園'; $('#r-world span').textContent = worldName; $('#r-world i').style.background = Workouts.ZONE_COLORS[1];
+    rideScene.restart();
+    rideScene.set({ day: 0.05, speed: 0, cadence: 0, intensity: 0.3, zone: 1, p: 0, grade: Course.gradeAt(0) });
+    zoneState.ride = 1;
     $('#r-start').hidden = false; $('#r-paused').hidden = true;
     initAudio();
     keepAwake(true);
@@ -244,6 +244,11 @@
     if (!dev.trainer || dev.trainer.state !== 'connected') toast('トレーナーが未接続です。ホームで接続できます', 3200);
   }
 
+  const courseP = () => {
+    if (!ride) return 0;
+    if (ride.mode === 'workout') return ride.total ? Math.min(1, ride.wt / ride.total) : 0;
+    return (ride.cdist % Course.L) / Course.L;
+  };
   function currentStep() { return ride && ride.steps && !ride.done ? Workouts.at(ride.steps, ride.wt) : null; }
   function applyControl() {
     const t = dev.trainer;
@@ -256,8 +261,12 @@
       const w = Math.round(cfg.ftp * (a.pct / 100) * (1 + ride.offset / 100));
       ride.target = w;
       if (t) t.setErg(w);
+    } else if (ride.mode === 'workout') {
+      if (t) t.setSim(0);
     } else if (ride.freeMode === 'erg') {
       ride.target = ride.ergW; if (t) t.setErg(ride.ergW);
+    } else if (ride.freeMode === 'course') {
+      if (t) t.setSim(Math.round(Course.gradeAt(courseP()) * ride.diff) / 100);
     } else if (t) t.setSim(ride.grade);
   }
 
@@ -278,44 +287,60 @@
       ride.zero = 0;
       if (ride.autoPaused) { ride.autoPaused = false; $('#r-paused').hidden = true; }
     }
-    const grade = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : 0;
+    // virtual speed: real climbing physics on the course, flat road otherwise
+    const grade = ride.mode === 'free' ? (ride.freeMode === 'course' ? Course.gradeAt(courseP()) : ride.freeMode === 'sim' ? ride.grade : 0) : 0;
     const vt = Metrics.speedFromPower(live.power, cfg.weight + cfg.bike, grade);
     ride.vs += (vt - ride.vs) * 0.3;
     if (live.power === 0) ride.vs *= 0.85;
     ride.dist += ride.vs;
+    if (ride.mode === 'free') {
+      const lapBefore = Math.floor(ride.cdist / Course.L);
+      ride.cdist += ride.vs;
+      const remain = Course.L - (ride.cdist % Course.L);
+      if (!ride.gate && remain < 120) { ride.gate = true; rideScene.finishIn = remain; }
+      if (Math.floor(ride.cdist / Course.L) > lapBefore) {
+        const lt = ride.t - ride.lapStartT; ride.laps.push(lt); ride.lapStartT = ride.t; ride.gate = false;
+        rideScene.pop('🏁', `ゴール！ ${fmtClock(lt)}`); rideScene.startX = rideScene.x + rideScene.H * 0.2;
+        beep(784, 0.15); setTimeout(() => beep(1046, 0.3), 180);
+        toast(`${ride.laps.length}本目 ゴール ${fmtClock(lt)}　続けてもう1本！`, 4000);
+      }
+    }
     const s = ride.sm;
     s.ts.push(now); s.p.push(Math.round(live.power)); s.hr.push(live.hr || null); s.cad.push(Math.round(live.cadence));
     s.spd.push(Math.round(ride.vs * 36) / 10); s.dist.push(Math.round(ride.dist * 10) / 10); s.tgt.push(ride.target);
     ride.t++;
     ride.kj += live.power / 1000;
-    const M = Workouts.MILESTONES;
-    while (ride.ms < M.length && ride.kj >= M[ride.ms].k) {
-      rideScene.pop(M[ride.ms].e, M[ride.ms].t);
-      beep(1318, 0.08, 0.15); setTimeout(() => beep(1568, 0.12, 0.15), 110);
-      ride.ms++;
+    const lv = Workouts.level(Math.round(ride.kj));
+    if (lv && lv.id !== ride.foodId) {
+      ride.foodId = lv.id;
+      rideScene.pop(lv.f.e, `${Workouts.label(lv.f, lv.n)}ぶん`);
+      if (ride.kj > 40) { beep(1318, 0.08, 0.15); setTimeout(() => beep(1568, 0.12, 0.15), 110); }
     }
     if (ride.mode === 'workout' && !ride.done) {
       ride.wt++;
+      const left = ride.total - ride.wt;
+      if (!ride.gate && left <= 15 && left > 0) { ride.gate = true; rideScene.finishIn = left * Math.max(rideScene.speed / 3.6, 2); }
       const a = currentStep();
       if (!a) {
-        ride.done = true;
-        ride.target = null;
+        ride.done = true; ride.target = null; ride.laps.push(ride.t);
         if (dev.trainer) dev.trainer.setSim(0);
+        rideScene.pop('🏁', 'FINISH!');
         beep(784, 0.15); setTimeout(() => beep(1046, 0.3), 180);
-        modal('ワークアウト完了！', '<p>おつかれさまでした。このまま自由に走って、好きなところで「終了」を押してください。</p>', [{ label: 'OK', value: 0, cls: 'primary' }]);
+        modal('ゴール！', '<p>ワークアウト完走です。このまま自由に走って、好きなところで「終了」を押してください。</p>', [{ label: 'OK', value: 0, cls: 'primary' }]);
         renderControls();
       } else {
         if (a.i !== ride.lastStep) { if (ride.lastStep >= 0) beep(988, 0.25); ride.lastStep = a.i; }
         else if (a.remain <= 3 && a.remain > 0) beep(660, 0.08, 0.18);
       }
     }
+    ride.maxP = Math.max(ride.maxP, ride.mode === 'workout' ? courseP() : ride.laps.length ? 1 : courseP());
     applyControl();
     if (ride.t % 30 === 0) autosave();
   }
 
   function autosave() {
     try {
-      Store.set('rt.inprogress', JSON.stringify({ id: ride.id, name: ride.name, workoutId: ride.workout && ride.workout.id, start: ride.startWall || ride.created, sm: ride.sm, ftp: cfg.ftp }));
+      Store.set('rt.inprogress', JSON.stringify({ id: ride.id, name: ride.name, workoutId: ride.workout && ride.workout.id, start: ride.startWall || ride.created, sm: ride.sm, ftp: cfg.ftp, maxP: ride.maxP, laps: ride.laps, mode: ride.mode }));
     } catch (e) { /* storage full */ }
   }
 
@@ -341,27 +366,36 @@
     if (z < cur) return Math.min(cur, Workouts.zoneOf(pct + 3));
     return z;
   }
+  let homeP = 0.02;
   function updateScenes() {
     const pedaling = live.power > 0 || live.cadence > 5;
     const pct = live.p3 / cfg.ftp;
     const p5 = live.p5.reduce((a, b) => a + b, 0) / Math.max(1, live.p5.length);
     if (!$('#v-home').hidden) {
-      const spd = pedaling ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike) * 3.6 : 16;
-      homeScene.set({ speed: spd, cadence: pedaling ? live.cadence : 70, intensity: pedaling ? pct : 0.4, day: dayFromClock() });
-      zoneState.home = pedaling ? hystZone((p5 / cfg.ftp) * 100, zoneState.home) : 1;
-      homeScene.setZone(zoneState.home);
+      homeP = (homeP + 0.0025) % 1; // the home window slowly rides the whole course
+      const g = Course.gradeAt(homeP);
+      const spd = pedaling ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike, g) * 3.6 : 15;
+      zoneState.home = pedaling ? hystZone((p5 / cfg.ftp) * 100, zoneState.home) : 2;
+      homeScene.set({ speed: spd, cadence: pedaling ? live.cadence : 82, intensity: pedaling ? pct : 0.7, day: dayFromClock(), p: homeP, grade: g, zone: zoneState.home, remainKm: null });
       const d = homeScene.day;
-      $('#home-note').textContent = d > 0.74 || d < 0.03 ? 'こんばんは。夜のひと漕ぎ、いきますか' : d < 0.2 ? 'おはようございます' : '';
+      $('#home-note').textContent = d > 0.74 || d < 0.03 ? '夜練、いきますか' : d < 0.2 ? 'おはようございます' : '';
     }
     if (ride && ride.active) {
+      const desk = window.matchMedia('(min-width: 1000px) and (min-height: 560px)').matches;
+      rideScene.inset = desk ? $('#v-ride .hud').offsetHeight + 34 : 0;
       const moving = ride.started && !ride.paused && !ride.autoPaused;
+      const p = courseP();
+      const g = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : Course.gradeAt(p);
+      if (moving && p5 > 0) zoneState.ride = hystZone((p5 / cfg.ftp) * 100, zoneState.ride);
+      const remainKm = ride.mode === 'workout' ? (ride.done ? 0 : (1 - p) * Course.L / 1000) : (Course.L - (ride.cdist % Course.L)) / 1000;
+      // scenery speed: actual virtual speed, but never so slow that a flat-road workout looks frozen
+      const vis = ride.mode === 'workout' ? Metrics.speedFromPower(live.p3, cfg.weight + cfg.bike, g) * 3.6 : ride.vs * 3.6;
       rideScene.set({
-        speed: moving ? ride.vs * 3.6 : rideScene.speed * 0.8,
+        speed: moving ? vis : rideScene.speed * 0.8,
         cadence: moving ? live.cadence : 0,
-        intensity: pct,
-        day: 0.06 + ride.t / 3600,
+        intensity: pct, zone: zoneState.ride, p, grade: g, remainKm,
+        day: 0.05 + ride.t / 5400,
       });
-      if (moving && p5 > 0) { zoneState.ride = hystZone((p5 / cfg.ftp) * 100, zoneState.ride); rideScene.setZone(zoneState.ride); }
     }
   }
 
@@ -378,7 +412,24 @@
     $('[data-r=power]').textContent = p;
     $('[data-r=hr]').textContent = live.hr || '--';
     $('[data-r=cadence]').textContent = Math.round(live.cadence);
-    $('#m-power').style.borderLeftColor = Workouts.ZONE_COLORS[Workouts.zoneOf((live.p3 / cfg.ftp) * 100)];
+    $('#m-power').style.setProperty('--zc', Workouts.ZONE_COLORS[Workouts.zoneOf((live.p3 / cfg.ftp) * 100)]);
+  }
+  function drawCourse() {
+    const { ctx, W, H } = prepCanvas($('#r-course'));
+    ctx.clearRect(0, 0, W, H);
+    const E = Course.elev, N = E.length - 1, top = Course.total;
+    const X = (k) => (k / N) * W, Y = (h) => H - 3 - (h / top) * (H - 8);
+    Course.STAGES.forEach((s, i) => {
+      const a = Math.round(s.p * N), b = Math.round((Course.STAGES[i + 1] ? Course.STAGES[i + 1].p : 1) * N);
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.1)';
+      ctx.beginPath(); ctx.moveTo(X(a), H); for (let k = a; k <= b; k++) ctx.lineTo(X(k), Y(E[k])); ctx.lineTo(X(b), H); ctx.closePath(); ctx.fill();
+    });
+    const p = courseP(), kp = Math.round(p * N);
+    ctx.fillStyle = 'rgba(255,195,31,.45)';
+    ctx.beginPath(); ctx.moveTo(0, H); for (let k = 0; k <= kp; k++) ctx.lineTo(X(k), Y(E[k])); ctx.lineTo(X(kp), H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.beginPath(); for (let k = 0; k <= N; k += 3) { if (k) ctx.lineTo(X(k), Y(E[k])); else ctx.moveTo(X(k), Y(E[k])); } ctx.stroke();
+    ctx.fillStyle = '#FFC31F'; ctx.beginPath(); ctx.arc(X(kp), Y(E[kp]), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#12202A'; ctx.lineWidth = 1.5; ctx.stroke();
   }
   function renderRide() {
     if (!ride) return;
@@ -386,7 +437,19 @@
     $('#r-clock').textContent = fmtClock(ride.t);
     $('[data-r=speed]').textContent = (ride.vs * 3.6).toFixed(1);
     $('[data-r=dist]').textContent = (ride.dist / 1000).toFixed(2);
-    $('#r-target').innerHTML = ride.target != null ? `目標<b>${ride.target}</b>W` : (ride.mode === 'free' && ride.freeMode === 'sim' ? `勾配<b>${ride.grade.toFixed(1)}</b>%` : '');
+    const p = courseP();
+    const st = Course.STAGES[Course.stageAt(p)];
+    $('#r-stage').textContent = `${Course.stageAt(p) + 1}/6　${st.name}`;
+    if (ride.mode === 'workout') $('#r-remain').textContent = ride.done ? 'ゴール' : `ゴールまで ${fmtClock(ride.total - ride.wt)}`;
+    else $('#r-remain').textContent = `ゴールまで ${((Course.L - (ride.cdist % Course.L)) / 1000).toFixed(1)} km`;
+    $('#r-elev').textContent = `標高 +${Math.round(Course.elevAt(p))} m${ride.laps.length && ride.mode === 'free' ? `　${ride.laps.length + 1}本目` : ''}`;
+    const g = ride.mode === 'free' && ride.freeMode === 'sim' ? ride.grade : Course.gradeAt(p);
+    $('#r-grade').textContent = `勾配 ${g.toFixed(1)}%`;
+    drawCourse();
+    const tg = $('#r-target');
+    if (ride.target != null) tg.innerHTML = `目標<b>${ride.target}</b>W`;
+    else if (ride.mode === 'free' && ride.freeMode !== 'erg') tg.innerHTML = `勾配<b>${(ride.freeMode === 'course' ? (g * ride.diff) / 100 : ride.grade).toFixed(1)}</b>%`;
+    else tg.innerHTML = '';
     // step info
     const si = $('#r-step');
     if (ride.mode === 'workout' && !ride.done) {
@@ -397,68 +460,83 @@
         si.innerHTML = `<span>このステップ ${esc(pctTxt)}　残り <b>${fmtClock(a.remain)}</b></span><span>${nx ? `次 ${nx.free ? '自由走' : `${Math.round(nx.p0)}%`}（${fmtMS(nx.d)}）` : '最後のステップ'}</span>`;
       }
     } else if (ride.mode === 'workout') {
-      si.innerHTML = '<span>ワークアウト完了。自由に走れます</span><span></span>';
+      si.innerHTML = '<span>ワークアウト完走。自由に走れます</span><span></span>';
     } else {
-      si.innerHTML = `<span>フリーライド　${ride.freeMode === 'sim' ? '勾配モード' : 'ワット固定モード'}</span><span>${worldName}</span>`;
+      const label = { course: 'コースの勾配に合わせて負荷が変わります', sim: '勾配を自分で設定', erg: 'ワット固定' }[ride.freeMode];
+      si.innerHTML = `<span>ヒルクライム　${label}</span><span>${ride.laps.length ? `ベスト ${fmtClock(Math.min(...ride.laps))}` : ''}</span>`;
     }
     // food
     const kcal = Math.round(ride.kj);
-    $('#r-gyoza').textContent = `×${Math.floor(kcal / Workouts.GYOZA)}`;
-    $('#r-kcal').textContent = `${kcal} kcal`;
-    const nm = Workouts.nextMilestone(kcal);
-    const prevK = [...Workouts.MILESTONES].reverse().find((m) => m.k <= kcal);
-    if (nm) {
-      const from = prevK ? prevK.k : 0;
-      $('#r-foodbar').style.width = `${clamp(((kcal - from) / (nm.k - from)) * 100, 0, 100)}%`;
-      $('#r-foodnext').textContent = `あと${nm.k - kcal}kcalで ${nm.e} ${nm.t.replace('ぶん', '')}`;
-    } else { $('#r-foodbar').style.width = '100%'; $('#r-foodnext').textContent = '満腹です'; }
+    const lv = Workouts.level(kcal);
+    $('#r-food-e').textContent = lv ? lv.f.e : '🔥';
+    $('#r-food-t').textContent = lv ? `${Workouts.label(lv.f, lv.n)}ぶん` : 'まだこれから';
+    $('#r-kcal').textContent = `${kcal} kcal 燃焼`;
+    const nk = Workouts.nextLevelK(kcal), pk = lv ? (kcal < 1000 ? lv.f.k : Math.floor(kcal / 500) * 500) : 0;
+    $('#r-foodbar').style.width = `${clamp(((kcal - pk) / Math.max(1, nk - pk)) * 100, 0, 100)}%`;
     drawStrip();
   }
 
   function renderControls() {
     if (!ride) return;
     const c = $('#r-controls');
-    const btn = (label, act, cls = '') => `<button data-ract="${act}" class="${cls}">${label}</button>`;
-    let r1 = btn(ride.paused ? '再開' : '一時停止', 'pause', ride.paused ? 'on' : '');
+    const btn = (label, act, cls = '', key = '') => `<button data-ract="${act}" class="${cls}"${key ? ` title="${key}"` : ''}>${label}</button>`;
+    let r1 = btn(ride.paused ? '再開' : '一時停止', 'pause', ride.paused ? 'on' : '', 'スペース');
     let r2 = '';
     if (ride.mode === 'workout' && !ride.done) {
-      r1 += btn('スキップ', 'skip') + btn('ERG', 'erg', ride.ergOn ? 'on' : '');
-      r2 = btn('−5%', 'minus') + `<div class="val"><small>強度</small>${ride.offset >= 0 ? '+' : ''}${ride.offset}%</div>` + btn('+5%', 'plus');
+      r1 += btn('スキップ', 'skip', '', 'S') + btn('ERG', 'erg', ride.ergOn ? 'on' : '', 'E');
+      r2 = btn('−5%', 'minus', '', '←') + `<div class="val"><small>強度</small>${ride.offset >= 0 ? '+' : ''}${ride.offset}%</div>` + btn('+5%', 'plus', '', '→');
+    } else if (ride.mode === 'workout') {
+      r2 = '<div class="val"><small>完走</small>FREE</div>';
     } else {
-      r1 += btn(ride.freeMode === 'sim' ? 'ワット固定へ' : '勾配モードへ', 'mode');
-      r2 = ride.freeMode === 'sim'
-        ? btn('−0.5%', 'minus') + `<div class="val"><small>勾配</small>${ride.grade.toFixed(1)}%</div>` + btn('+0.5%', 'plus')
-        : btn('−10W', 'minus') + `<div class="val"><small>目標</small>${ride.ergW}W</div>` + btn('+10W', 'plus');
+      r1 += btn({ course: 'コース', sim: '勾配', erg: 'ワット' }[ride.freeMode] + 'モード', 'mode', '', 'M');
+      if (ride.freeMode === 'course') r2 = btn('−10%', 'minus', '', '←') + `<div class="val"><small>坂の強さ</small>${ride.diff}%</div>` + btn('+10%', 'plus', '', '→');
+      else if (ride.freeMode === 'sim') r2 = btn('−0.5%', 'minus', '', '←') + `<div class="val"><small>勾配</small>${ride.grade.toFixed(1)}%</div>` + btn('+0.5%', 'plus', '', '→');
+      else r2 = btn('−10W', 'minus', '', '←') + `<div class="val"><small>目標</small>${ride.ergW}W</div>` + btn('+10W', 'plus', '', '→');
     }
     r1 += btn('終了', 'end', 'end');
-    c.innerHTML = `<div class="crow">${r1}</div><div class="crow">${r2}</div>`;
+    c.innerHTML = `<div class="crow">${r1}</div><div class="crow">${r2}</div><div class="keys">スペース 一時停止　← → 調整　${ride.mode === 'workout' ? 'S スキップ　E ERG' : 'M モード'}　F 全画面</div>`;
     const sim = dev.trainer instanceof BLE.SimTrainer;
     const sb = $('#r-sim');
     sb.hidden = !sim;
-    if (sim) {
-      sb.innerHTML = `<span>シミュ</span><button data-ract="sim-ped">${dev.trainer.pedaling ? '止まる' : '漕ぐ'}</button><span>脚力 ${dev.trainer.effort}W</span><button data-ract="sim-down">−20</button><button data-ract="sim-up">+20</button>`;
-    }
+    if (sim) sb.innerHTML = `<span>シミュ</span><button data-ract="sim-ped">${dev.trainer.pedaling ? '止まる' : '漕ぐ'}</button><span>脚力 ${dev.trainer.effort}W</span><button data-ract="sim-down">−20</button><button data-ract="sim-up">+20</button>`;
   }
 
-  $('#v-ride').addEventListener('click', async (ev) => {
-    const b = ev.target.closest('[data-ract]'); if (!b || !ride) return;
-    const a = b.dataset.ract;
+  function rideAction(a) {
+    if (!ride) return;
     if (a === 'pause') { ride.paused = !ride.paused; $('#r-paused').hidden = !ride.paused; $('#r-paused').textContent = '一時停止中'; }
     else if (a === 'minus' || a === 'plus') {
       const s = a === 'plus' ? 1 : -1;
       if (ride.mode === 'workout' && !ride.done) ride.offset = clamp(ride.offset + 5 * s, -50, 50);
+      else if (ride.mode === 'workout') return;
+      else if (ride.freeMode === 'course') ride.diff = clamp(ride.diff + 10 * s, 30, 150);
       else if (ride.freeMode === 'sim') ride.grade = clamp(Math.round((ride.grade + 0.5 * s) * 10) / 10, -5, 15);
       else ride.ergW = clamp(ride.ergW + 10 * s, 50, 1000);
       applyControl();
     } else if (a === 'skip') {
       const st = currentStep(); if (st) { ride.wt = st.step.start + st.step.d; ride.lastStep = -1; applyControl(); }
-    } else if (a === 'erg') { ride.ergOn = !ride.ergOn; applyControl(); toast(ride.ergOn ? 'ERGオン：目標ワットに自動で合わせます' : 'ERGオフ：負荷は平地相当になります'); }
-    else if (a === 'mode') { ride.freeMode = ride.freeMode === 'sim' ? 'erg' : 'sim'; applyControl(); }
+    } else if (a === 'erg') { if (ride.mode !== 'workout' || ride.done) return; ride.ergOn = !ride.ergOn; applyControl(); toast(ride.ergOn ? 'ERGオン：目標ワットに自動で合わせます' : 'ERGオフ：負荷は平地相当になります'); }
+    else if (a === 'mode') { if (ride.mode !== 'free') return; ride.freeMode = { course: 'sim', sim: 'erg', erg: 'course' }[ride.freeMode]; applyControl(); toast({ course: 'コースモード：坂に合わせて負荷が変わります', sim: '勾配モード：勾配を自分で決めます', erg: 'ワットモード：負荷をワットで固定します' }[ride.freeMode]); }
+    else if (a === 'fullscreen') { toggleFullscreen(); return; }
     else if (a === 'end') { endRide(); return; }
     else if (a === 'sim-ped') dev.trainer.pedaling = !dev.trainer.pedaling;
     else if (a === 'sim-up') dev.trainer.effort = Math.min(600, dev.trainer.effort + 20);
     else if (a === 'sim-down') dev.trainer.effort = Math.max(40, dev.trainer.effort - 20);
     renderControls(); renderRide();
+  }
+  $('#v-ride').addEventListener('click', (ev) => { const b = ev.target.closest('[data-ract]'); if (b) rideAction(b.dataset.ract); });
+  function toggleFullscreen() {
+    const d = document;
+    try {
+      if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+      else { const el = d.documentElement; (el.requestFullscreen || el.webkitRequestFullscreen).call(el); }
+    } catch (e) { toast('このブラウザでは全画面にできません'); }
+  }
+  document.addEventListener('keydown', (ev) => {
+    if (ev.target.closest('input, textarea') || !$('#modal').hidden) return;
+    if (!ride || !ride.active || $('#v-ride').hidden) return;
+    const k = ev.key;
+    const map = { ' ': 'pause', ArrowLeft: 'minus', ArrowDown: 'minus', ArrowRight: 'plus', ArrowUp: 'plus', s: 'skip', S: 'skip', e: 'erg', E: 'erg', m: 'mode', M: 'mode', f: 'fullscreen', F: 'fullscreen' };
+    if (map[k]) { ev.preventDefault(); rideAction(map[k]); }
   });
 
   async function endRide() {
@@ -471,17 +549,18 @@
     if (dev.trainer) dev.trainer.setSim(0);
     keepAwake(false);
     Store.del('rt.inprogress');
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* */ }
     if (choice === 'discard') { ride = null; resetTo('home'); return; }
-    const rec = buildRecord(ride.id, ride.name, ride.workout && ride.workout.id, ride.startWall || ride.created, ride.sm, cfg.ftp, ride.workout && ride.workout.test);
+    const rec = buildRecord(ride.id, ride.name, ride.workout && ride.workout.id, ride.startWall || ride.created, ride.sm, cfg.ftp, ride.workout && ride.workout.test, { maxP: ride.maxP, laps: ride.laps, mode: ride.mode });
     try { await DB.put(rec); } catch (e) { toast('保存に失敗しました。下のボタンでファイルに書き出してください', 5000); }
     ride = null;
     viewing = rec;
     resetTo('summary');
   }
 
-  function buildRecord(id, name, workoutId, start, sm, ftp, test) {
+  function buildRecord(id, name, workoutId, start, sm, ftp, test, extra = {}) {
     const summary = Metrics.summarize(sm, ftp);
-    return { id, name, workoutId: workoutId || null, start, ftp, weight: cfg.weight, test: test || null, samples: sm, summary };
+    return { id, name, workoutId: workoutId || null, start, ftp, weight: cfg.weight, test: test || null, samples: sm, summary, bib: cfg.bib, ...extra };
   }
 
   /* ---------- charts ---------- */
@@ -509,7 +588,7 @@
       }
     }
     // FTP line
-    ctx.strokeStyle = opts.dark ? 'rgba(255,255,255,.35)' : 'rgba(34,48,90,.35)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, Y(100)); ctx.lineTo(W, Y(100)); ctx.stroke(); ctx.setLineDash([]);
     if (opts.actual) {
       ctx.strokeStyle = opts.dark ? '#FFFFFF' : '#1D1D1F'; ctx.lineWidth = 1.5; ctx.beginPath();
@@ -524,10 +603,10 @@
     const cv = $('#r-strip');
     if (!ride) return;
     if (ride.mode === 'workout') {
-      drawProfile(cv, ride.steps, { dark: true, pos: ride.done ? ride.total : ride.wt, bg: '#161F3D', actual: null });
+      drawProfile(cv, ride.steps, { dark: true, pos: ride.done ? ride.total : ride.wt, bg: 'rgba(0,0,0,0)', actual: null });
     } else {
       const { ctx, W, H } = prepCanvas(cv);
-      ctx.fillStyle = '#161F3D'; ctx.fillRect(0, 0, W, H);
+      ctx.clearRect(0, 0, W, H);
       const p = ride.sm.p.slice(-600);
       const maxP = Math.max(cfg.ftp * 1.3, ...p);
       p.forEach((v, i) => {
@@ -559,7 +638,7 @@
       for (let i = 0; i < n; i += step) { const v = sm.hr[i]; if (!v) { st = false; continue; } const y = H - ((v - lo) / (hi - lo)) * (H - 14) - 4; if (st) ctx.lineTo(X(i), y); else { ctx.moveTo(X(i), y); st = true; } }
       ctx.stroke();
     }
-    ctx.fillStyle = '#4b5a40'; ctx.font = '11px system-ui';
+    ctx.fillStyle = '#5B6B75'; ctx.font = '11px system-ui';
     ctx.fillText('パワー（色＝ゾーン）', 6, 13);
     if (hrs.length) { ctx.fillStyle = '#A81B22'; ctx.fillText('心拍', 120, 13); }
   }
@@ -598,10 +677,10 @@
       $('#wd-title').textContent = w.name;
       $('#wd-desc').textContent = w.desc || '';
       const steps = Workouts.flatten(w.blocks);
-      requestAnimationFrame(() => drawProfile($('#wd-profile'), steps));
+      requestAnimationFrame(() => drawProfile($('#wd-profile'), steps, { bg: '#1A2D39' }));
       const dur = Workouts.duration(w.blocks);
       const kj = Math.round(steps.reduce((a, s) => a + (s.free ? 50 : (s.p0 + s.p1) / 2) / 100 * cfg.ftp * s.d, 0) / 1000);
-      $('#wd-facts').innerHTML = `<div><dt>時間</dt><dd>${fmtDur(dur)}</dd></div><div><dt>TSS目安</dt><dd>${Workouts.estimateTSS(w.blocks)}</dd></div><div><dt>食べもの目安</dt><dd>${kj >= 500 ? `🍜${(kj / 500).toFixed(1)}` : `🥟${Math.round(kj / 40)}`}</dd></div>`;
+      $('#wd-facts').innerHTML = `<div><dt>時間</dt><dd>${fmtDur(dur)}</dd></div><div><dt>TSS目安</dt><dd>${Workouts.estimateTSS(w.blocks)}</dd></div><div><dt>燃やせる目安</dt><dd>${(() => { const lv = Workouts.level(kj); return lv ? `${lv.f.e}${lv.n > 1 ? `×${lv.n}` : ''}` : '—'; })()}</dd></div>`;
       $('#wd-steps').innerHTML = w.blocks.map((b) => {
         let txt = '', p = 50, d = 0;
         const W = (pct) => `${Math.round((cfg.ftp * pct) / 100)}W`;
@@ -622,53 +701,56 @@
       const rides = (await DB.all()).sort((a, b) => b.start - a.start);
       if (!rides.length) { $('#hist-list').innerHTML = '<li class="empty">まだ記録がありません。ひと漕ぎしてきましょう。</li>'; return; }
       $('#hist-list').innerHTML = rides.map((r) => {
-        const s = r.summary; const f = Workouts.receipt(s.kcal);
-        const food = `${f.ramen ? `🍜×${f.ramen} ` : ''}${f.gyoza ? `🥟×${f.gyoza}` : ''}` || '🥟×0';
+        const s = r.summary; const lv = Workouts.level(s.kcal);
+        const food = lv ? `${lv.f.e} ${Workouts.label(lv.f, lv.n)}ぶん` : '';
         return `<li><button class="item" data-rid="${esc(r.id)}"><div class="item-name">${esc(r.name)}</div>
           <div class="item-meta"><span>${fmtDate(r.start)}</span><span>${fmtClock(s.duration)}</span><span>平均${s.avgPower}W</span><span class="food-meta">${food}</span></div></button></li>`;
       }).join('');
     },
     settings() {
-      $('#s-ftp').value = cfg.ftp; $('#s-weight').value = cfg.weight; $('#s-bike').value = cfg.bike; $('#s-maxhr').value = cfg.maxHR;
+      $('#s-ftp').value = cfg.ftp; $('#s-weight').value = cfg.weight; $('#s-bike').value = cfg.bike; $('#s-maxhr').value = cfg.maxHR; $('#s-bib').value = cfg.bib;
       $('#s-autopause').checked = cfg.autoPause; $('#s-sound').checked = cfg.sound; $('#s-wake').checked = cfg.wake; $('#s-sim').checked = cfg.sim;
       $('#s-sim').disabled = !btOK;
     },
     log() { $('#log-pre').textContent = BLE.logBuf.join('\n') || 'まだログはありません'; },
   };
 
-  /* ---------- summary (receipt) ---------- */
+  /* ---------- result (finisher card) ---------- */
   function renderSummary() {
     const r = viewing; if (!r) return;
-    const s = r.summary; const f = Workouts.receipt(s.kcal);
-    const rows = [
-      ['時間', fmtClock(s.duration)], ['距離（バーチャル）', `${(s.distance / 1000).toFixed(2)} km`],
-      ['平均パワー', `${s.avgPower} W`], ['NP', `${s.np} W`], ['最大パワー', `${s.maxPower} W`],
-      ['IF / TSS', `${s.IF.toFixed(2)} / ${s.tss}`],
-      ['平均心拍 / 最大', s.avgHR ? `${s.avgHR} / ${s.maxHR} bpm` : '—'],
-      ['平均ケイデンス', s.avgCad ? `${s.avgCad} rpm` : '—'],
-      ['仕事量', `${s.kj} kJ`],
-    ];
-    const foodItems = [];
-    if (f.ramen) foodItems.push(['🍜 ラーメン', `${f.ramen}杯`]);
-    if (f.gyoza) foodItems.push(['🥟 餃子', `${f.gyoza}個`]);
-    if (!foodItems.length) foodItems.push(['🥟 餃子', 'まだ1個未満']);
-    const emojis = '🍜'.repeat(Math.min(f.ramen, 10)) + '🥟'.repeat(Math.min(f.gyoza, 30));
+    const s = r.summary;
+    const finished = (r.laps && r.laps.length) || (r.maxP != null && r.maxP >= 0.999);
+    const reachP = r.maxP != null ? r.maxP : 0;
+    const stage = Course.STAGES[Course.stageAt(Math.min(0.9999, reachP))];
+    const seed = parseInt(String(r.id).replace(/\D/g, '').slice(-9), 10) || 7;
+    const foods = Workouts.combo(s.kcal, seed);
+    const goalTime = r.laps && r.laps.length ? Math.min(...r.laps) : null;
+    const cell = (k, v, u = '') => `<div><dt>${k}</dt><dd>${v}${u ? `<small>${u}</small>` : ''}</dd></div>`;
     let ftpBox = '';
     if (r.test === 'ramp' && s.best1m) {
       const est = Math.round(s.best1m * 0.75);
-      ftpBox = `<div class="rc-ftp"><div>最高1分パワー ${s.best1m}W → 推定FTP</div><b>${est} W</b><div class="row-btns" style="margin-top:8px"><button class="btn outline" data-sact="set-ftp" data-v="${est}">FTPを${est}Wにする</button></div></div>`;
+      ftpBox = `<div class="fn-ftp"><div>最高1分パワー ${s.best1m}W から推定したFTP</div><b>${est} W</b><div class="row-btns" style="margin-top:8px"><button class="btn outline" data-sact="set-ftp" data-v="${est}">FTPを${est}Wにする</button></div></div>`;
     }
     $('#sum-body').innerHTML = `
-      <div class="receipt">
-        <div class="rc-head"><h2>御会計</h2><span>${fmtDate(r.start)}</span></div>
-        <div class="rc-name">${esc(r.name)}</div>
-        <dl class="rc-rows">${rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
-        <div class="rc-food"><h3>消費カロリー（目安）</h3><div class="total">${s.kcal}<small>kcal</small></div>
-          <ul>${foodItems.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join('')}</ul>
-          <div class="emojis">${emojis}</div></div>
-        <canvas class="rc-chart" id="sum-chart"></canvas>
+      <article class="finisher">
+        <div class="fn-top">
+          <div><div class="fn-kicker">TOUGE INDOOR HILLCLIMB</div><h2 class="fn-title">${finished ? 'FINISHER' : 'RIDE RESULT'}</h2></div>
+          <div class="fn-bib"><small>No.</small><b>${String(r.bib || cfg.bib).padStart(3, '0')}</b></div>
+        </div>
+        <div class="fn-name">${esc(r.name)}</div>
+        <div class="fn-date">${fmtDate(r.start)}</div>
+        <div class="fn-time"><b>${fmtClock(goalTime || s.duration)}</b><span>${goalTime ? 'ゴールタイム' : '走行時間'}</span></div>
+        <div class="fn-reach">${finished ? '<em>完走</em>湖畔のゴールまで上りきりました' : `<em>到達</em>${esc(stage.name)}（標高 +${Math.round(Course.elevAt(reachP))} m）`}</div>
+        <dl class="fn-grid">
+          ${cell('平均パワー', s.avgPower, 'W')}${cell('NP', s.np, 'W')}${cell('最大', s.maxPower, 'W')}
+          ${cell('平均心拍', s.avgHR || '—', s.avgHR ? 'bpm' : '')}${cell('ケイデンス', s.avgCad || '—', s.avgCad ? 'rpm' : '')}${cell('TSS', s.tss, '')}
+          ${cell('IF', s.IF.toFixed(2))}${cell('仕事量', s.kj, 'kJ')}${cell('距離', (s.distance / 1000).toFixed(1), 'km')}
+        </dl>
+        <div class="fn-food"><h3>燃やしたカロリー（目安）</h3><div class="kc">${s.kcal}<small>kcal</small></div>
+          <ul>${foods.length ? foods.map((o) => `<li><span>${o.f.e}</span><span>${esc(Workouts.label(o.f, o.n))}</span><span>${o.f.k * o.n} kcal</span></li>`).join('') : '<li><span>🔥</span><span>次はもっと燃やそう</span><span></span></li>'}</ul></div>
+        <canvas class="fn-chart" id="sum-chart"></canvas>
         ${ftpBox}
-      </div>
+      </article>
       <div class="sum-actions">
         <button class="btn primary block" data-sact="strava">Stravaにアップする</button>
         <div class="row-btns">
@@ -679,50 +761,6 @@
       </div>`;
     requestAnimationFrame(() => drawRideChart($('#sum-chart'), r));
   }
-
-  const fileBase = (r) => { const d = new Date(r.start); return `rollertei_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`; };
-  async function exportFile(blob, filename) {
-    if (window.claude && typeof window.claude.use === 'function') {
-      modal('プレビューでは保存できません', '<p>このプレビュー画面ではファイルを保存できません。GitHub Pagesなどで公開したページをBluefyで開くと、FITの保存とStravaへのアップロードができます。</p>', [{ label: 'OK', value: 0 }]);
-      return false;
-    }
-    let file = null;
-    try { file = new File([blob], filename, { type: blob.type || 'application/octet-stream' }); } catch (e) { /* old webview */ }
-    if (file && navigator.canShare && navigator.share) {
-      try {
-        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: filename }); return true; }
-      } catch (e) { if (e.name === 'AbortError') return false; BLE.log(`share失敗: ${e.message}`); }
-    }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename; a.rel = 'noopener';
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { a.remove(); }, 1000);
-    setTimeout(() => URL.revokeObjectURL(url), 120000);
-    modal('ファイルを保存', `<p>保存画面が出なかったときは、下のリンクを長押しして「ダウンロード」または「リンク先を保存」を選んでください。</p><p><a href="${url}" download="${esc(filename)}">${esc(filename)}</a></p>`, [{ label: '閉じる', value: 0 }]);
-    return true;
-  }
-  const fitBlob = (r) => new Blob([FIT.encode(r)], { type: 'application/octet-stream' });
-
-  $('#v-summary').addEventListener('click', async (ev) => {
-    const b = ev.target.closest('[data-sact]'); if (!b || !viewing) return;
-    const a = b.dataset.sact; const r = viewing;
-    if (a === 'fit') exportFile(fitBlob(r), `${fileBase(r)}.fit`);
-    else if (a === 'tcx') exportFile(new Blob([FIT.tcx(r)], { type: 'application/vnd.garmin.tcx+xml' }), `${fileBase(r)}.tcx`);
-    else if (a === 'strava') {
-      const go = await modal('Stravaにアップする', `<ol>
-          <li>このあと出る画面で「"ファイル"に保存」を選んで、FITファイルを保存します。</li>
-          <li>Safariで <a href="https://www.strava.com/upload/select" target="_blank" rel="noopener">strava.com/upload/select</a> を開いてログインします。スマホ用の画面になったら、アドレスバーの「ぁあ」から「デスクトップ用Webサイトを表示」を選びます。</li>
-          <li>「ファイルを選択」で保存したFITを選ぶと、アップロードされます。</li></ol>
-          <p class="note">Strava無料会員はAPIを使えないため、この手動アップロードの方法にしています。</p>`,
-        [{ label: 'FITを保存する', value: 'fit', cls: 'primary' }, { label: '閉じる', value: 0 }]);
-      if (go === 'fit') exportFile(fitBlob(r), `${fileBase(r)}.fit`);
-    } else if (a === 'delete') {
-      const ok = await modal('この記録を削除しますか？', '<p>削除すると元に戻せません。</p>', [{ label: '削除する', value: true, cls: 'primary' }, { label: 'やめる', value: false }]);
-      if (ok) { await DB.del(r.id); viewing = null; toast('削除しました'); resetTo('history'); }
-    } else if (a === 'set-ftp') {
-      cfg.ftp = parseInt(b.dataset.v, 10); saveCfg(); toast(`FTPを${cfg.ftp}Wにしました`);
-    }
-  });
 
   /* ---------- editor ---------- */
   const BLOCK_NAMES = { steady: '一定', ramp: 'ランプ', intervals: 'インターバル', free: '自由走' };
@@ -748,7 +786,7 @@
   function edPreview() {
     const w = editing;
     const steps = Workouts.flatten(w.blocks);
-    drawProfile($('#ed-profile'), steps.length ? steps : [{ start: 0, d: 1, p0: 0, p1: 0 }]);
+    drawProfile($('#ed-profile'), steps.length ? steps : [{ start: 0, d: 1, p0: 0, p1: 0 }], { bg: '#1A2D39' });
     $('#ed-sum').textContent = `合計 ${fmtDur(Workouts.duration(w.blocks))}　TSS 約${Workouts.estimateTSS(w.blocks)}　（FTP ${cfg.ftp}W）`;
   }
   $('#ed-blocks').addEventListener('input', (ev) => {
@@ -781,6 +819,7 @@
     if (id === 's-weight') cfg.weight = n(ev.target.value, 20, 200, cfg.weight);
     if (id === 's-bike') cfg.bike = n(ev.target.value, 3, 30, cfg.bike);
     if (id === 's-maxhr') cfg.maxHR = Math.round(n(ev.target.value, 100, 230, cfg.maxHR));
+    if (id === 's-bib') cfg.bib = Math.round(n(ev.target.value, 1, 9999, cfg.bib));
     if (id === 's-autopause') cfg.autoPause = ev.target.checked;
     if (id === 's-sound') cfg.sound = ev.target.checked;
     if (id === 's-wake') cfg.wake = ev.target.checked;
@@ -827,9 +866,9 @@
       stack.pop(); if (stack[stack.length - 1] === 'wdetail') show('wdetail', false); else { stack.push('wdetail'); show('wdetail', false); }
     } else if (a === 'backup') {
       const rides = await DB.all();
-      const blob = new Blob([JSON.stringify({ app: 'rollertei', v: 1, exported: Date.now(), rides, workouts: Workouts.loadCustom() })], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ app: 'touge', v: 1, exported: Date.now(), rides, workouts: Workouts.loadCustom() })], { type: 'application/json' });
       const d = new Date();
-      exportFile(blob, `rollertei_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`);
+      exportFile(blob, `touge_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`);
     } else if (a === 'copy-log') {
       try { await navigator.clipboard.writeText(BLE.logBuf.join('\n')); toast('コピーしました'); } catch (e) { toast('コピーできませんでした。長押しで選択してください'); }
     }
@@ -854,12 +893,12 @@
         [{ label: '保存する', value: true, cls: 'primary' }, { label: '捨てる', value: false }]);
       Store.del('rt.inprogress');
       if (ok) {
-        const rec = buildRecord(p.id, p.name, p.workoutId, p.start, p.sm, p.ftp || cfg.ftp, null);
+        const rec = buildRecord(p.id, p.name, p.workoutId, p.start, p.sm, p.ftp || cfg.ftp, null, { maxP: p.maxP || 0, laps: p.laps || [], mode: p.mode });
         await DB.put(rec); viewing = rec; show('summary');
       }
     } catch (e) { Store.del('rt.inprogress'); }
   })();
 
   // test hook
-  window.__rt = { cfg, live, get ride() { return ride; }, dev, homeScene, rideScene, show, newRide, DB, endRide };
+  window.__rt = { cfg, live, get ride() { return ride; }, dev, homeScene, rideScene, show, newRide, DB, endRide, get viewing() { return viewing; } };
 })();
