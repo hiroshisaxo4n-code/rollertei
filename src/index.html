@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#22305A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ローラー亭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ホーム -->
+  <section class="view tiled" id="v-home">
+    <header class="noren" aria-label="ローラー亭">
+      <div class="panels" aria-hidden="true"><span>ロ</span><span>ー</span><span>ラ</span><span>ー</span><span>亭</span></div>
+    </header>
+    <div class="window"><canvas id="home-scene"></canvas><div class="window-sky-note" id="home-note"></div></div>
+    <div class="pad">
+      <div class="devices">
+        <div class="dev" id="dev-trainer">
+          <svg class="dev-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="16" cy="16" r="3" fill="currentColor"/><path d="M16 5v6M16 21v6M5 16h6M21 16h6" stroke="currentColor" stroke-width="2"/></svg>
+          <div class="dev-body"><div class="dev-name">スマートトレーナー</div><div class="dev-status" data-status>未接続</div></div>
+          <button class="btn small" data-act="connect-trainer">接続</button>
+        </div>
+        <div class="dev" id="dev-hr">
+          <svg class="dev-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27S4 19.5 4 11.5A6 6 0 0 1 16 8a6 6 0 0 1 12 3.5C28 19.5 16 27 16 27z" fill="currentColor"/></svg>
+          <div class="dev-body"><div class="dev-name">心拍計</div><div class="dev-status" data-status>未接続</div></div>
+          <button class="btn small" data-act="connect-hr">接続</button>
+        </div>
+      </div>
+      <div class="live-strip" id="home-live" hidden>
+        <div><b data-live="power">0</b><small>W</small></div>
+        <div><b data-live="cadence">0</b><small>rpm</small></div>
+        <div><b data-live="hr">--</b><small>bpm</small></div>
+      </div>
+      <button class="btn primary block" data-go="workouts">ワークアウトを選ぶ</button>
+      <button class="btn outline block" data-act="free-ride">フリーライド</button>
+      <nav class="sublinks">
+        <button data-go="history">記録</button>
+        <button data-go="settings">設定</button>
+        <button data-go="log">接続ログ</button>
+      </nav>
+      <p class="note" id="bt-note"></p>
+    </div>
+  </section>
+
+  <!-- ワークアウト一覧 -->
+  <section class="view tiled" id="v-workouts" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>ワークアウト</h1><span></span></header>
+    <div class="scroll">
+      <ul class="menu" id="wk-list"></ul>
+      <div class="pad row-btns">
+        <button class="btn outline" data-act="new-workout">新しく作る</button>
+        <label class="btn outline file-btn">ZWOを読み込む<input type="file" accept=".zwo,.xml,text/xml,application/xml" id="zwo-input"></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ワークアウト詳細 -->
+  <section class="view tiled" id="v-wdetail" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1 id="wd-title"></h1><span></span></header>
+    <div class="scroll pad">
+      <p class="desc" id="wd-desc"></p>
+      <canvas class="profile" id="wd-profile"></canvas>
+      <dl class="facts" id="wd-facts"></dl>
+      <ol class="steps" id="wd-steps"></ol>
+      <button class="btn primary block" data-act="ride-workout">このワークアウトで乗る</button>
+      <div class="row-btns">
+        <button class="btn outline" data-act="edit-workout" id="wd-edit">編集</button>
+        <button class="btn outline" data-act="copy-workout">複製して編集</button>
+        <button class="btn ghost danger" data-act="delete-workout" id="wd-del">削除</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- エディタ -->
+  <section class="view tiled" id="v-editor" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>ワークアウトを編集</h1><button class="bar-act" data-act="save-workout">保存</button></header>
+    <div class="scroll pad">
+      <label class="field"><span>名前</span><input type="text" id="ed-name" maxlength="40"></label>
+      <canvas class="profile" id="ed-profile"></canvas>
+      <p class="ed-sum" id="ed-sum"></p>
+      <ul class="blocks" id="ed-blocks"></ul>
+      <div class="add-row">
+        <button class="chip" data-add="steady">＋一定</button>
+        <button class="chip" data-add="ramp">＋ランプ</button>
+        <button class="chip" data-add="intervals">＋インターバル</button>
+        <button class="chip" data-add="free">＋自由走</button>
+      </div>
+      <label class="field"><span>メモ</span><textarea id="ed-desc" rows="2" maxlength="300"></textarea></label>
+    </div>
+  </section>
+
+  <!-- 走行 -->
+  <section class="view ride" id="v-ride" hidden>
+    <div class="stage">
+      <canvas id="ride-scene"></canvas>
+      <div class="stage-top">
+        <div class="clock" id="r-clock">0:00</div>
+        <div class="world-chip" id="r-world"><i></i><span>公園</span></div>
+      </div>
+      <div class="start-hint" id="r-start">ペダルを回すとスタート</div>
+      <div class="pause-badge" id="r-paused" hidden>一時停止中</div>
+    </div>
+    <div class="hud">
+      <div class="m power" id="m-power"><label>パワー</label><b data-r="power">0</b><small>W</small><em id="r-target"></em></div>
+      <div class="m"><label>心拍</label><b data-r="hr">--</b><small>bpm</small></div>
+      <div class="m"><label>ケイデンス</label><b data-r="cadence">0</b><small>rpm</small></div>
+      <div class="m"><label>速度</label><b data-r="speed">0.0</b><small>km/h</small></div>
+      <div class="m"><label>距離</label><b data-r="dist">0.00</b><small>km</small></div>
+      <div class="stepinfo" id="r-step"></div>
+      <canvas class="strip" id="r-strip"></canvas>
+      <div class="food" id="r-food">
+        <div class="food-now"><span class="food-e">🥟</span><b id="r-gyoza">×0</b><span id="r-kcal">0 kcal</span></div>
+        <div class="food-next"><div class="food-bar"><i id="r-foodbar"></i></div><span id="r-foodnext"></span></div>
+      </div>
+      <div class="controls" id="r-controls"></div>
+      <div class="simbar" id="r-sim" hidden></div>
+    </div>
+  </section>
+
+  <!-- お会計（サマリー） -->
+  <section class="view tiled" id="v-summary" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>お会計</h1><span></span></header>
+    <div class="scroll pad" id="sum-body"></div>
+  </section>
+
+  <!-- 記録 -->
+  <section class="view tiled" id="v-history" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>記録</h1><span></span></header>
+    <div class="scroll"><ul class="menu" id="hist-list"></ul></div>
+  </section>
+
+  <!-- 設定 -->
+  <section class="view tiled" id="v-settings" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>設定</h1><span></span></header>
+    <div class="scroll pad">
+      <div class="form">
+        <label class="field"><span>FTP</span><input type="number" inputmode="numeric" id="s-ftp" min="50" max="600"><i>W</i></label>
+        <label class="field"><span>体重</span><input type="number" inputmode="decimal" id="s-weight" min="20" max="200" step="0.1"><i>kg</i></label>
+        <label class="field"><span>自転車の重さ</span><input type="number" inputmode="decimal" id="s-bike" min="3" max="30" step="0.1"><i>kg</i></label>
+        <label class="field"><span>最大心拍</span><input type="number" inputmode="numeric" id="s-maxhr" min="100" max="230"><i>bpm</i></label>
+        <label class="switch"><span>止まったら自動で一時停止</span><input type="checkbox" id="s-autopause"></label>
+        <label class="switch"><span>ステップの切り替わりで音を鳴らす</span><input type="checkbox" id="s-sound"></label>
+        <label class="switch"><span>走行中は画面を消さない</span><input type="checkbox" id="s-wake"></label>
+        <label class="switch"><span>シミュレーターで試す（機材なし）</span><input type="checkbox" id="s-sim"></label>
+      </div>
+      <p class="note">消費カロリーは仕事量（kJ）からの推定です。食べ物の換算は目安として、餃子1個40kcal、ラーメン1杯500kcalで計算しています。</p>
+      <h2 class="h2">記録のバックアップ</h2>
+      <p class="note">記録はこのブラウザの中だけに保存されます。Bluefyを削除すると消えるので、ときどき書き出しておくと安心です。</p>
+      <div class="row-btns">
+        <button class="btn outline" data-act="backup">すべて書き出す</button>
+        <label class="btn outline file-btn">読み込む<input type="file" accept=".json,application/json" id="restore-input"></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ログ -->
+  <section class="view tiled" id="v-log" hidden>
+    <header class="bar"><button class="back" data-back aria-label="戻る">‹</button><h1>接続ログ</h1><button class="bar-act" data-act="copy-log">コピー</button></header>
+    <div class="scroll pad"><p class="note">うまくつながらないときは、このログをコピーして送ってください。</p><pre id="log-pre"></pre></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal" id="modal" hidden><div class="modal-box" role="dialog" aria-modal="true"><h3 id="modal-title"></h3><div id="modal-body"></div><div class="modal-btns" id="modal-btns"></div></div></div>
+  <video id="nosleep" playsinline muted loop hidden></video>
+</div>
+<script>/*__JS__*/</script>
+</body>
+</html>
