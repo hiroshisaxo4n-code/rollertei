@@ -762,6 +762,69 @@
     requestAnimationFrame(() => drawRideChart($('#sum-chart'), r));
   }
 
+  /* ---------- export / Strava ---------- */
+  const fileBase = (r) => { const d = new Date(r.start); const z = (n) => String(n).padStart(2, '0'); return `touge_${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`; };
+  const isPhone = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  async function exportFile(blob, filename) {
+    if (window.claude && typeof window.claude.use === 'function') {
+      modal('プレビューでは保存できません', '<p>このプレビュー画面ではファイルを保存できません。公開したページ（GitHub Pages）をChrome・Edge・Bluefyで開くと保存できます。</p>', [{ label: 'OK', value: 0 }]);
+      return false;
+    }
+    // スマホは共有シート、PCは普通のダウンロード
+    if (isPhone()) {
+      let file = null;
+      try { file = new File([blob], filename, { type: blob.type || 'application/octet-stream' }); } catch (e) { /* old webview */ }
+      if (file && navigator.canShare && navigator.share) {
+        try {
+          if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: filename }); return true; }
+        } catch (e) { if (e.name === 'AbortError') return false; BLE.log(`share失敗: ${e.message}`); }
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => a.remove(), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 300000);
+    if (isPhone()) {
+      modal('ファイルを保存', `<p>保存画面が出なかったときは、下のリンクを長押しして「ダウンロード」を選んでください。</p><p><a href="${url}" download="${esc(filename)}">${esc(filename)}</a></p>`, [{ label: '閉じる', value: 0 }]);
+    } else {
+      toast(`ダウンロードしました：${filename}（「ダウンロード」フォルダを確認）`, 5000);
+    }
+    return true;
+  }
+  const fitBlob = (r) => new Blob([FIT.encode(r)], { type: 'application/octet-stream' });
+  const STRAVA_UPLOAD = 'https://www.strava.com/upload/select';
+
+  $('#v-summary').addEventListener('click', async (ev) => {
+    const b = ev.target.closest('[data-sact]'); if (!b || !viewing) return;
+    const a = b.dataset.sact; const r = viewing;
+    try {
+      if (a === 'fit') await exportFile(fitBlob(r), `${fileBase(r)}.fit`);
+      else if (a === 'tcx') await exportFile(new Blob([FIT.tcx(r)], { type: 'application/vnd.garmin.tcx+xml' }), `${fileBase(r)}.tcx`);
+      else if (a === 'strava') {
+        const phone = isPhone();
+        const steps = phone
+          ? `<li>「FITを保存して進む」を押し、出てきた画面で「ファイルに保存」を選びます。</li>
+             <li>ブラウザで <a href="${STRAVA_UPLOAD}" target="_blank" rel="noopener">strava.com/upload/select</a> を開いてログインします。スマホ用の画面になったら「デスクトップ用サイトを表示」に切り替えます。</li>
+             <li>「ファイルを選択」で保存したFITを選ぶとアップロードできます。</li>`
+          : `<li>「FITを保存して進む」を押すと、FITファイルがダウンロードされ、Stravaのアップロードページが新しいタブで開きます。</li>
+             <li>Stravaにログインして、「ファイルを選択」から今ダウンロードした <b>${esc(fileBase(r))}.fit</b> を選びます（ダウンロードフォルダにあります）。またはファイルをページへドラッグしても大丈夫です。</li>
+             <li>タイトルなどを確認して「保存」を押せば完了です。</li>`;
+        const go = await modal('Stravaにアップする', `<ol>${steps}</ol><p class="note">Strava無料会員はAPIが使えないため、ファイルを手動でアップロードする方法にしています。</p>`,
+          [{ label: 'FITを保存して進む', value: 'fit', cls: 'primary' }, { label: '閉じる', value: 0 }]);
+        if (go === 'fit') {
+          const ok = await exportFile(fitBlob(r), `${fileBase(r)}.fit`);
+          if (ok && !phone && !(window.claude && typeof window.claude.use === 'function')) window.open(STRAVA_UPLOAD, '_blank', 'noopener');
+        }
+      } else if (a === 'delete') {
+        const ok = await modal('この記録を削除しますか？', '<p>削除すると元に戻せません。</p>', [{ label: '削除する', value: true, cls: 'primary' }, { label: 'やめる', value: false }]);
+        if (ok) { await DB.del(r.id); viewing = null; toast('削除しました'); resetTo('history'); }
+      } else if (a === 'set-ftp') {
+        cfg.ftp = parseInt(b.dataset.v, 10); saveCfg(); toast(`FTPを${cfg.ftp}Wにしました`);
+      }
+    } catch (e) { BLE.log(`書き出し失敗: ${e.message}`); toast(`うまくいきませんでした：${e.message}`, 5000); }
+  });
+
   /* ---------- editor ---------- */
   const BLOCK_NAMES = { steady: '一定', ramp: 'ランプ', intervals: 'インターバル', free: '自由走' };
   function renderEditor() {
